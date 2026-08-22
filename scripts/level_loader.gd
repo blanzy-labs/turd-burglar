@@ -1,0 +1,359 @@
+class_name TurdLevelLoader
+extends RefCounted
+
+const DEFAULT_LEVEL_ID := "restroom_001"
+const LEVEL_DIRECTORY := "res://levels"
+
+
+static func selected_level_id(arguments: PackedStringArray) -> String:
+	for argument in arguments:
+		if argument.begins_with("--level="):
+			return argument.trim_prefix("--level=")
+	return DEFAULT_LEVEL_ID
+
+
+static func load_selected(arguments: PackedStringArray) -> Dictionary:
+	return load_level(selected_level_id(arguments))
+
+
+static func load_level(level_id: String) -> Dictionary:
+	if not _is_valid_identifier(level_id):
+		return _failure(level_id, "id", "must contain only lowercase letters, digits, and underscores")
+	return load_file("%s/%s.json" % [LEVEL_DIRECTORY, level_id], level_id)
+
+
+static func load_file(path: String, expected_id: String = "") -> Dictionary:
+	var level_label := expected_id if not expected_id.is_empty() else path
+	if not FileAccess.file_exists(path):
+		return _failure(level_label, "file", "not found: %s" % path)
+	var file := FileAccess.open(path, FileAccess.READ)
+	if file == null:
+		return _failure(level_label, "file", "could not open: %s" % error_string(FileAccess.get_open_error()))
+	return parse_and_validate(file.get_as_text(), level_label, expected_id)
+
+
+static func parse_and_validate(source: String, level_label: String = "inline", expected_id: String = "") -> Dictionary:
+	var parser := JSON.new()
+	var parse_error := parser.parse(source)
+	if parse_error != OK:
+		return _failure(
+			level_label,
+			"json",
+			"parse error at line %d: %s" % [parser.get_error_line(), parser.get_error_message()]
+		)
+	if typeof(parser.data) != TYPE_DICTIONARY:
+		return _failure(level_label, "root", "must be a JSON object")
+	return validate_level(parser.data, level_label, expected_id)
+
+
+static func validate_level(raw: Dictionary, level_label: String = "inline", expected_id: String = "") -> Dictionary:
+	var id_result := _required_string(raw, "id", level_label)
+	if not id_result.ok:
+		return id_result
+	var level_id: String = id_result.value
+	if not _is_valid_identifier(level_id):
+		return _failure(level_label, "id", "must contain only lowercase letters, digits, and underscores")
+	if not expected_id.is_empty() and level_id != expected_id:
+		return _failure(level_label, "id", "expected %s but found %s" % [expected_id, level_id])
+	level_label = level_id
+
+	var name_result := _required_string(raw, "name", level_label)
+	if not name_result.ok:
+		return name_result
+	if not raw.has("objective") or typeof(raw.objective) != TYPE_DICTIONARY:
+		return _failure(level_label, "objective", "required object is missing")
+	if not raw.objective.has("turds_required"):
+		return _failure(level_label, "objective.turds_required", "required integer is missing")
+	var required_value = raw.objective.turds_required
+	if not _is_integer_number(required_value) or int(required_value) <= 0:
+		return _failure(level_label, "objective.turds_required", "must be an integer greater than zero")
+	var required_turds := int(required_value)
+
+	var spawn_result := _required_vector(raw, "player_spawn", level_label)
+	if not spawn_result.ok:
+		return spawn_result
+	if not raw.has("exit") or typeof(raw.exit) != TYPE_DICTIONARY:
+		return _failure(level_label, "exit", "required object is missing")
+	var exit_result := _required_vector(raw.exit, "position", level_label, "exit.position")
+	if not exit_result.ok:
+		return exit_result
+
+	if not raw.has("toilets") or typeof(raw.toilets) != TYPE_ARRAY or raw.toilets.is_empty():
+		return _failure(level_label, "toilets", "must be a non-empty array")
+	var toilets: Array[Dictionary] = []
+	var toilet_ids := {}
+	var collectible_count := 0
+	for index in raw.toilets.size():
+		var field := "toilets[%d]" % index
+		if typeof(raw.toilets[index]) != TYPE_DICTIONARY:
+			return _failure(level_label, field, "must be an object")
+		var toilet_data: Dictionary = raw.toilets[index]
+		var toilet_id_result := _required_string(toilet_data, "id", level_label, "%s.id" % field)
+		if not toilet_id_result.ok:
+			return toilet_id_result
+		var toilet_id: String = toilet_id_result.value
+		if toilet_ids.has(toilet_id):
+			return _failure(level_label, "%s.id" % field, "duplicate toilet id: %s" % toilet_id)
+		toilet_ids[toilet_id] = true
+		var toilet_position := _required_vector(toilet_data, "position", level_label, "%s.position" % field)
+		if not toilet_position.ok:
+			return toilet_position
+		if not toilet_data.has("has_turd") or typeof(toilet_data.has_turd) != TYPE_BOOL:
+			return _failure(level_label, "%s.has_turd" % field, "required boolean is missing or invalid")
+		var rotation := Vector3.ZERO
+		if toilet_data.has("rotation_degrees"):
+			var rotation_result := _vector_result(toilet_data.rotation_degrees, level_label, "%s.rotation_degrees" % field)
+			if not rotation_result.ok:
+				return rotation_result
+			rotation = rotation_result.value
+		if toilet_data.has_turd:
+			collectible_count += 1
+		toilets.append({
+			"id": toilet_id,
+			"position": toilet_position.value,
+			"rotation_degrees": rotation,
+			"has_turd": toilet_data.has_turd,
+		})
+	if collectible_count != required_turds:
+		return _failure(
+			level_label,
+			"objective.turds_required",
+			"must equal collectible toilet count (%d), found %d" % [collectible_count, required_turds]
+		)
+
+	if not raw.has("geometry") or typeof(raw.geometry) != TYPE_ARRAY or raw.geometry.is_empty():
+		return _failure(level_label, "geometry", "must be a non-empty array")
+	var geometry: Array[Dictionary] = []
+	var geometry_names := {}
+	for index in raw.geometry.size():
+		var result := _normalize_geometry(raw.geometry[index], index, level_label, geometry_names)
+		if not result.ok:
+			return result
+		geometry.append(result.value)
+
+	if not raw.has("lights") or typeof(raw.lights) != TYPE_ARRAY:
+		return _failure(level_label, "lights", "required array is missing")
+	var lights: Array[Dictionary] = []
+	for index in raw.lights.size():
+		var result := _normalize_light(raw.lights[index], index, level_label)
+		if not result.ok:
+			return result
+		lights.append(result.value)
+	if lights.is_empty():
+		return _failure(level_label, "lights", "must contain at least one light")
+
+	if not raw.has("environment") or typeof(raw.environment) != TYPE_DICTIONARY:
+		return _failure(level_label, "environment", "required object is missing")
+	var environment_result := _normalize_environment(raw.environment, level_label)
+	if not environment_result.ok:
+		return environment_result
+
+	var labels: Array[Dictionary] = []
+	if raw.has("labels"):
+		if typeof(raw.labels) != TYPE_ARRAY:
+			return _failure(level_label, "labels", "must be an array")
+		for index in raw.labels.size():
+			var result := _normalize_label(raw.labels[index], index, level_label)
+			if not result.ok:
+				return result
+			labels.append(result.value)
+
+	return {
+		"ok": true,
+		"level": {
+			"id": level_id,
+			"name": name_result.value,
+			"objective": {"turds_required": required_turds},
+			"player_spawn": spawn_result.value,
+			"exit": {"position": exit_result.value},
+			"toilets": toilets,
+			"geometry": geometry,
+			"lights": lights,
+			"environment": environment_result.value,
+			"labels": labels,
+			"collectible_turd_count": collectible_count,
+		},
+	}
+
+
+static func _normalize_geometry(value, index: int, level_label: String, names: Dictionary) -> Dictionary:
+	var field := "geometry[%d]" % index
+	if typeof(value) != TYPE_DICTIONARY:
+		return _failure(level_label, field, "must be an object")
+	var primitive: Dictionary = value
+	if not primitive.has("type") or primitive.type != "box":
+		return _failure(level_label, "%s.type" % field, "unsupported geometry primitive; expected box")
+	var name_result := _required_string(primitive, "name", level_label, "%s.name" % field)
+	if not name_result.ok:
+		return name_result
+	if names.has(name_result.value):
+		return _failure(level_label, "%s.name" % field, "duplicate geometry name: %s" % name_result.value)
+	names[name_result.value] = true
+	var size_result := _required_vector(primitive, "size", level_label, "%s.size" % field)
+	if not size_result.ok:
+		return size_result
+	var size: Vector3 = size_result.value
+	if size.x <= 0.0 or size.y <= 0.0 or size.z <= 0.0:
+		return _failure(level_label, "%s.size" % field, "components must be greater than zero")
+	var position_result := _required_vector(primitive, "position", level_label, "%s.position" % field)
+	if not position_result.ok:
+		return position_result
+	var color_result := _required_color(primitive, "color", level_label, "%s.color" % field)
+	if not color_result.ok:
+		return color_result
+	if not primitive.has("collision") or typeof(primitive.collision) != TYPE_BOOL:
+		return _failure(level_label, "%s.collision" % field, "required boolean is missing or invalid")
+	return {"ok": true, "value": {
+		"type": "box",
+		"name": name_result.value,
+		"size": size,
+		"position": position_result.value,
+		"color": color_result.value,
+		"collision": primitive.collision,
+	}}
+
+
+static func _normalize_light(value, index: int, level_label: String) -> Dictionary:
+	var field := "lights[%d]" % index
+	if typeof(value) != TYPE_DICTIONARY:
+		return _failure(level_label, field, "must be an object")
+	var light: Dictionary = value
+	var name_result := _required_string(light, "name", level_label, "%s.name" % field)
+	if not name_result.ok:
+		return name_result
+	if not light.has("type") or light.type not in ["directional", "omni"]:
+		return _failure(level_label, "%s.type" % field, "must be directional or omni")
+	if not light.has("energy") or not _is_number(light.energy) or float(light.energy) <= 0.0:
+		return _failure(level_label, "%s.energy" % field, "must be a number greater than zero")
+	var color_result := _required_color(light, "color", level_label, "%s.color" % field)
+	if not color_result.ok:
+		return color_result
+	var normalized := {
+		"name": name_result.value,
+		"type": light.type,
+		"energy": float(light.energy),
+		"color": color_result.value,
+	}
+	if light.type == "directional":
+		var rotation_result := _required_vector(light, "rotation_degrees", level_label, "%s.rotation_degrees" % field)
+		if not rotation_result.ok:
+			return rotation_result
+		normalized.rotation_degrees = rotation_result.value
+		normalized.shadow = bool(light.get("shadow", true))
+	else:
+		var position_result := _required_vector(light, "position", level_label, "%s.position" % field)
+		if not position_result.ok:
+			return position_result
+		if not light.has("range") or not _is_number(light.range) or float(light.range) <= 0.0:
+			return _failure(level_label, "%s.range" % field, "must be a number greater than zero")
+		normalized.position = position_result.value
+		normalized.range = float(light.range)
+	return {"ok": true, "value": normalized}
+
+
+static func _normalize_environment(value: Dictionary, level_label: String) -> Dictionary:
+	var background := _required_color(value, "background_color", level_label, "environment.background_color")
+	if not background.ok:
+		return background
+	var ambient := _required_color(value, "ambient_color", level_label, "environment.ambient_color")
+	if not ambient.ok:
+		return ambient
+	if not value.has("ambient_energy") or not _is_number(value.ambient_energy) or float(value.ambient_energy) < 0.0:
+		return _failure(level_label, "environment.ambient_energy", "must be a non-negative number")
+	return {"ok": true, "value": {
+		"background_color": background.value,
+		"ambient_color": ambient.value,
+		"ambient_energy": float(value.ambient_energy),
+	}}
+
+
+static func _normalize_label(value, index: int, level_label: String) -> Dictionary:
+	var field := "labels[%d]" % index
+	if typeof(value) != TYPE_DICTIONARY:
+		return _failure(level_label, field, "must be an object")
+	var label: Dictionary = value
+	var name_result := _required_string(label, "name", level_label, "%s.name" % field)
+	if not name_result.ok:
+		return name_result
+	var text_result := _required_string(label, "text", level_label, "%s.text" % field)
+	if not text_result.ok:
+		return text_result
+	var position_result := _required_vector(label, "position", level_label, "%s.position" % field)
+	if not position_result.ok:
+		return position_result
+	var color_result := _required_color(label, "color", level_label, "%s.color" % field)
+	if not color_result.ok:
+		return color_result
+	var rotation := Vector3.ZERO
+	if label.has("rotation_degrees"):
+		var rotation_result := _vector_result(label.rotation_degrees, level_label, "%s.rotation_degrees" % field)
+		if not rotation_result.ok:
+			return rotation_result
+		rotation = rotation_result.value
+	return {"ok": true, "value": {
+		"name": name_result.value,
+		"text": text_result.value,
+		"position": position_result.value,
+		"rotation_degrees": rotation,
+		"color": color_result.value,
+	}}
+
+
+static func _required_string(data: Dictionary, key: String, level_label: String, field: String = "") -> Dictionary:
+	var resolved_field := key if field.is_empty() else field
+	if not data.has(key) or typeof(data[key]) != TYPE_STRING or data[key].strip_edges().is_empty():
+		return _failure(level_label, resolved_field, "required non-empty string is missing or invalid")
+	return {"ok": true, "value": data[key]}
+
+
+static func _required_vector(data: Dictionary, key: String, level_label: String, field: String = "") -> Dictionary:
+	var resolved_field := key if field.is_empty() else field
+	if not data.has(key):
+		return _failure(level_label, resolved_field, "required Vector3 array is missing")
+	return _vector_result(data[key], level_label, resolved_field)
+
+
+static func _vector_result(value, level_label: String, field: String) -> Dictionary:
+	if typeof(value) != TYPE_ARRAY or value.size() != 3:
+		return _failure(level_label, field, "must be a 3-value array")
+	for component in value:
+		if not _is_number(component) or not is_finite(float(component)):
+			return _failure(level_label, field, "components must be finite numbers")
+	return {"ok": true, "value": Vector3(float(value[0]), float(value[1]), float(value[2]))}
+
+
+static func _required_color(data: Dictionary, key: String, level_label: String, field: String) -> Dictionary:
+	if not data.has(key) or typeof(data[key]) != TYPE_STRING or not _is_valid_color(data[key]):
+		return _failure(level_label, field, "must be a 6- or 8-digit hexadecimal color")
+	return {"ok": true, "value": Color(data[key])}
+
+
+static func _is_valid_color(value: String) -> bool:
+	var candidate := value.trim_prefix("#")
+	if candidate.length() not in [6, 8]:
+		return false
+	for character in candidate.to_lower():
+		if character not in "0123456789abcdef":
+			return false
+	return true
+
+
+static func _is_valid_identifier(value: String) -> bool:
+	if value.is_empty():
+		return false
+	for character in value:
+		if character not in "abcdefghijklmnopqrstuvwxyz0123456789_":
+			return false
+	return true
+
+
+static func _is_number(value) -> bool:
+	return typeof(value) in [TYPE_INT, TYPE_FLOAT]
+
+
+static func _is_integer_number(value) -> bool:
+	return _is_number(value) and is_finite(float(value)) and is_equal_approx(float(value), roundf(float(value)))
+
+
+static func _failure(level_label: String, field: String, reason: String) -> Dictionary:
+	return {"ok": false, "error": "level=%s field=%s reason=%s" % [level_label, field, reason]}

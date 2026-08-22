@@ -10,6 +10,7 @@ var turd_visual: Node3D
 func _ready() -> void:
 	add_to_group("toilets")
 	_build_toilet()
+	turd_visual.visible = has_turd
 
 
 func collect() -> bool:

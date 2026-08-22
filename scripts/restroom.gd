@@ -1,15 +1,22 @@
-class_name FirstFlushRestroom
+class_name RestroomRuntime
 extends Node3D
 
 enum HeistState { PLAYING, EXIT_AVAILABLE, HEIST_COMPLETE }
 
-const REQUIRED_TURDS := 3
 const PLAYER_SCENE := preload("res://scenes/player.tscn")
 const TOILET_SCENE := preload("res://scenes/toilet.tscn")
 const EXIT_SCENE := preload("res://scenes/exit.tscn")
 
+@export_file("*.json") var level_path_override := ""
+
 var state := HeistState.PLAYING
 var collected_turds := 0
+var required_turds := 0
+var collectible_turd_count := 0
+var level_id := ""
+var level_name := ""
+var level_definition: Dictionary = {}
+var load_error := ""
 var toilets: Array[TurdToilet] = []
 var player: BurglarPlayer
 var heist_exit: HeistExit
@@ -18,13 +25,35 @@ var counter_label: Label
 var prompt_label: Label
 var status_label: Label
 var completion_panel: ColorRect
+var completion_text: Label
 
 
 func _ready() -> void:
+	var load_result: Dictionary
+	if level_path_override.is_empty():
+		load_result = TurdLevelLoader.load_selected(OS.get_cmdline_user_args())
+	else:
+		load_result = TurdLevelLoader.load_file(level_path_override)
+	if not load_result.ok:
+		load_error = load_result.error
+		push_error("TB_LEVEL_LOAD_FAILED %s" % load_error)
+		get_tree().quit(1)
+		return
+
+	level_definition = load_result.level
+	level_id = level_definition.id
+	level_name = level_definition.name
+	required_turds = level_definition.objective.turds_required
+	collectible_turd_count = level_definition.collectible_turd_count
 	_build_environment()
 	_spawn_gameplay()
 	_build_hud()
 	_update_hud()
+	print("TB_LEVEL_LOADED=%s" % level_id)
+	print("TB_LEVEL_NAME=%s" % level_name)
+	print("TB_TOILETS=%d" % toilets.size())
+	print("TB_COLLECTIBLE_TURDS=%d" % collectible_turd_count)
+	print("TB_REQUIRED_TURDS=%d" % required_turds)
 
 
 func is_playing() -> bool:
@@ -43,7 +72,9 @@ func complete_heist() -> void:
 	completion_panel.visible = true
 	prompt_label.visible = false
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-	print("TB001_HEIST_COMPLETE")
+	print("TB_HEIST_COMPLETE")
+	if level_id == "restroom_001":
+		print("TB001_HEIST_COMPLETE")
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -58,81 +89,88 @@ func request_restart() -> void:
 
 func _on_toilet_collected(_toilet: TurdToilet) -> void:
 	collected_turds += 1
-	if collected_turds == REQUIRED_TURDS:
+	if collected_turds == required_turds:
 		state = HeistState.EXIT_AVAILABLE
 		heist_exit.set_locked(false)
-		print("TB001_EXIT_UNLOCKED")
+		print("TB_EXIT_UNLOCKED")
+		if level_id == "restroom_001":
+			print("TB001_EXIT_UNLOCKED")
 	_update_hud()
 
 
 func _update_hud() -> void:
-	counter_label.text = "TURDS: %d / %d" % [collected_turds, REQUIRED_TURDS]
+	counter_label.text = "TURDS: %d / %d" % [collected_turds, required_turds]
 	status_label.visible = state == HeistState.EXIT_AVAILABLE
+	completion_text.text = "HEIST COMPLETE\n\nTURDS STOLEN: %d / %d\n\nR — RESTART" % [collected_turds, required_turds]
 
 
 func _spawn_gameplay() -> void:
-	var toilet_positions := [Vector3(-5.0, 0.0, -5.25), Vector3(0.0, 0.0, -5.25), Vector3(5.0, 0.0, -5.25)]
-	for index in REQUIRED_TURDS:
+	for toilet_data: Dictionary in level_definition.toilets:
 		var toilet: TurdToilet = TOILET_SCENE.instantiate()
-		toilet.name = "Toilet%d" % (index + 1)
-		toilet.position = toilet_positions[index]
+		toilet.name = toilet_data.id
+		toilet.position = toilet_data.position
+		toilet.rotation_degrees = toilet_data.rotation_degrees
+		toilet.has_turd = toilet_data.has_turd
 		toilet.collected.connect(_on_toilet_collected)
 		add_child(toilet)
 		toilets.append(toilet)
 
 	player = PLAYER_SCENE.instantiate()
 	player.name = "Player"
-	player.position = Vector3(-1.6, 0.05, 3.3)
+	player.position = level_definition.player_spawn
 	add_child(player)
 
 	heist_exit = EXIT_SCENE.instantiate()
 	heist_exit.name = "Exit"
-	heist_exit.position = Vector3(7.2, 0.0, 5.85)
+	heist_exit.position = level_definition.exit.position
 	add_child(heist_exit)
 
 
 func _build_environment() -> void:
-	_add_box("Floor", Vector3(18.0, 0.4, 14.0), Vector3(0.0, -0.2, 0.0), Color("43b6a2"), true)
-	_add_box("BackWall", Vector3(18.0, 3.5, 0.4), Vector3(0.0, 1.75, -7.0), Color("f3df76"), true)
-	_add_box("FrontWall", Vector3(18.0, 3.5, 0.4), Vector3(0.0, 1.75, 7.0), Color("f3df76"), true)
-	_add_box("LeftWall", Vector3(0.4, 3.5, 14.0), Vector3(-9.0, 1.75, 0.0), Color("ed6f86"), true)
-	_add_box("RightWall", Vector3(0.4, 3.5, 14.0), Vector3(9.0, 1.75, 0.0), Color("ed6f86"), true)
-
-	var partition_x := [-7.45, -2.5, 2.5, 7.45]
-	for index in partition_x.size():
-		_add_box("StallWall%d" % (index + 1), Vector3(0.18, 2.45, 4.0), Vector3(partition_x[index], 1.23, -4.9), Color("85c9e8"), true)
-	var stall_centers := [-5.0, 0.0, 5.0]
-	for index in stall_centers.size():
+	for primitive: Dictionary in level_definition.geometry:
+		_add_box(
+			primitive.name,
+			primitive.size,
+			primitive.position,
+			primitive.color,
+			primitive.collision
+		)
+	for label_data: Dictionary in level_definition.labels:
 		var sign_label := Label3D.new()
-		sign_label.name = "StallSign%d" % (index + 1)
-		sign_label.text = "STALL %d" % (index + 1)
+		sign_label.name = label_data.name
+		sign_label.text = label_data.text
 		sign_label.font_size = 52
 		sign_label.outline_size = 10
-		sign_label.modulate = Color("482b54")
-		sign_label.position = Vector3(stall_centers[index], 2.45, -2.82)
+		sign_label.modulate = label_data.color
+		sign_label.position = label_data.position
+		sign_label.rotation_degrees = label_data.rotation_degrees
 		add_child(sign_label)
-
-	var directional := DirectionalLight3D.new()
-	directional.name = "SunLamp"
-	directional.rotation_degrees = Vector3(-55.0, -25.0, 0.0)
-	directional.light_energy = 1.15
-	directional.shadow_enabled = true
-	add_child(directional)
-	for light_x in [-5.0, 0.0, 5.0]:
-		var light := OmniLight3D.new()
-		light.position = Vector3(light_x, 2.8, -3.0)
-		light.omni_range = 8.0
-		light.light_energy = 3.0
-		light.light_color = Color("fff0a6")
-		add_child(light)
+	for light_data: Dictionary in level_definition.lights:
+		if light_data.type == "directional":
+			var directional := DirectionalLight3D.new()
+			directional.name = light_data.name
+			directional.rotation_degrees = light_data.rotation_degrees
+			directional.light_energy = light_data.energy
+			directional.light_color = light_data.color
+			directional.shadow_enabled = light_data.shadow
+			add_child(directional)
+		else:
+			var omni := OmniLight3D.new()
+			omni.name = light_data.name
+			omni.position = light_data.position
+			omni.omni_range = light_data.range
+			omni.light_energy = light_data.energy
+			omni.light_color = light_data.color
+			add_child(omni)
 
 	var world := WorldEnvironment.new()
+	world.name = "LevelEnvironment"
 	var environment := Environment.new()
 	environment.background_mode = Environment.BG_COLOR
-	environment.background_color = Color("203b4c")
+	environment.background_color = level_definition.environment.background_color
 	environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	environment.ambient_light_color = Color("b4d9df")
-	environment.ambient_light_energy = 0.55
+	environment.ambient_light_color = level_definition.environment.ambient_color
+	environment.ambient_light_energy = level_definition.environment.ambient_energy
 	world.environment = environment
 	add_child(world)
 
@@ -145,7 +183,7 @@ func _build_hud() -> void:
 	var top_panel := ColorRect.new()
 	top_panel.color = Color(0.05, 0.04, 0.08, 0.84)
 	top_panel.position = Vector2(18.0, 16.0)
-	top_panel.size = Vector2(270.0, 62.0)
+	top_panel.size = Vector2(290.0, 62.0)
 	canvas.add_child(top_panel)
 
 	counter_label = Label.new()
@@ -184,8 +222,7 @@ func _build_hud() -> void:
 	completion_panel.visible = false
 	canvas.add_child(completion_panel)
 
-	var completion_text := Label.new()
-	completion_text.text = "HEIST COMPLETE\n\nTURDS STOLEN: 3 / 3\n\nR — RESTART"
+	completion_text = Label.new()
 	completion_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	completion_text.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	completion_text.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)

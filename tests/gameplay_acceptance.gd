@@ -10,7 +10,13 @@ func _run() -> void:
 	var main := packed.instantiate()
 	root.add_child(main)
 	await process_frame
-	var game: FirstFlushRestroom = main.get_node("Restroom")
+	var game: RestroomRuntime = main.get_node("Restroom")
+	if game.level_id != "restroom_001" or game.level_name != "First Flush" or game.required_turds != 3:
+		_fail("First Flush level data")
+		return
+	if game.counter_label.text != "TURDS: 0 / 3":
+		_fail("dynamic initial HUD")
+		return
 
 	if game.collected_turds != 0 or not game.heist_exit.is_locked:
 		_fail("start state")
@@ -58,8 +64,11 @@ func _run() -> void:
 	if not game.toilets[1].collect() or not game.toilets[2].collect():
 		_fail("remaining collections")
 		return
-	if game.collected_turds != 3 or game.heist_exit.is_locked or game.state != FirstFlushRestroom.HeistState.EXIT_AVAILABLE:
+	if game.collected_turds != 3 or game.heist_exit.is_locked or game.state != RestroomRuntime.HeistState.EXIT_AVAILABLE:
 		_fail("objective completion")
+		return
+	if game.counter_label.text != "TURDS: 3 / 3":
+		_fail("dynamic completed HUD")
 		return
 	print("TB001_TURDS=3")
 	print("TB001_EXIT_UNLOCKED")
@@ -67,7 +76,7 @@ func _run() -> void:
 	if not game.heist_exit.attempt_exit(game.player):
 		_fail("exit trigger")
 		return
-	if game.state != FirstFlushRestroom.HeistState.HEIST_COMPLETE:
+	if game.state != RestroomRuntime.HeistState.HEIST_COMPLETE:
 		_fail("heist completion")
 		return
 	print("TB001_HEIST_COMPLETE")
@@ -76,7 +85,7 @@ func _run() -> void:
 	game.request_restart()
 	await process_frame
 	await process_frame
-	var restarted_game: FirstFlushRestroom = current_scene.get_node("Restroom")
+	var restarted_game: RestroomRuntime = current_scene.get_node("Restroom")
 	if restarted_game.collected_turds != 0 or not restarted_game.heist_exit.is_locked:
 		_fail("restart")
 		return

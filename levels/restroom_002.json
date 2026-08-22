@@ -1,0 +1,57 @@
+{
+  "id": "restroom_002",
+  "name": "Second Flush",
+  "objective": {
+    "turds_required": 5
+  },
+  "player_spawn": [-6.0, 0.05, 6.1],
+  "exit": {
+    "position": [10.4, 0.0, 6.3]
+  },
+  "toilets": [
+    {"id": "toilet_01", "position": [-10.0, 0.0, -8.55], "has_turd": true},
+    {"id": "toilet_02", "position": [-6.0, 0.0, -8.55], "has_turd": true},
+    {"id": "toilet_03", "position": [-2.0, 0.0, -8.55], "has_turd": false},
+    {"id": "toilet_04", "position": [2.0, 0.0, 1.25], "has_turd": true},
+    {"id": "toilet_05", "position": [6.0, 0.0, 1.25], "has_turd": true},
+    {"id": "toilet_06", "position": [10.0, 0.0, 1.25], "has_turd": true}
+  ],
+  "geometry": [
+    {"type": "box", "name": "FloorNorth", "size": [12.0, 0.4, 18.0], "position": [-6.0, -0.2, -1.0], "color": "584f9d", "collision": true},
+    {"type": "box", "name": "FloorEast", "size": [12.0, 0.4, 8.0], "position": [6.0, -0.2, 4.0], "color": "584f9d", "collision": true},
+    {"type": "box", "name": "NorthWall", "size": [12.0, 3.8, 0.4], "position": [-6.0, 1.9, -10.0], "color": "e5a8d5", "collision": true},
+    {"type": "box", "name": "WestWall", "size": [0.4, 3.8, 18.0], "position": [-12.0, 1.9, -1.0], "color": "f0c86b", "collision": true},
+    {"type": "box", "name": "SouthWall", "size": [24.0, 3.8, 0.4], "position": [0.0, 1.9, 8.0], "color": "e5a8d5", "collision": true},
+    {"type": "box", "name": "EastWall", "size": [0.4, 3.8, 8.0], "position": [12.0, 1.9, 4.0], "color": "f0c86b", "collision": true},
+    {"type": "box", "name": "InnerNorthWall", "size": [12.0, 3.8, 0.4], "position": [6.0, 1.9, 0.0], "color": "7bd0c7", "collision": true},
+    {"type": "box", "name": "InnerEastWall", "size": [0.4, 3.8, 10.0], "position": [0.0, 1.9, -5.0], "color": "7bd0c7", "collision": true},
+    {"type": "box", "name": "NorthStallPartition01", "size": [0.18, 2.5, 4.4], "position": [-11.9, 1.25, -7.8], "color": "6ed0ee", "collision": true},
+    {"type": "box", "name": "NorthStallPartition02", "size": [0.18, 2.5, 4.4], "position": [-8.0, 1.25, -7.8], "color": "6ed0ee", "collision": true},
+    {"type": "box", "name": "NorthStallPartition03", "size": [0.18, 2.5, 4.4], "position": [-4.0, 1.25, -7.8], "color": "6ed0ee", "collision": true},
+    {"type": "box", "name": "NorthStallPartition04", "size": [0.18, 2.5, 4.4], "position": [-0.1, 1.25, -7.8], "color": "6ed0ee", "collision": true},
+    {"type": "box", "name": "EastStallPartition01", "size": [0.18, 2.5, 4.0], "position": [0.1, 1.25, 2.0], "color": "fa7d91", "collision": true},
+    {"type": "box", "name": "EastStallPartition02", "size": [0.18, 2.5, 4.0], "position": [4.0, 1.25, 2.0], "color": "fa7d91", "collision": true},
+    {"type": "box", "name": "EastStallPartition03", "size": [0.18, 2.5, 4.0], "position": [8.0, 1.25, 2.0], "color": "fa7d91", "collision": true},
+    {"type": "box", "name": "EastStallPartition04", "size": [0.18, 2.5, 4.0], "position": [11.9, 1.25, 2.0], "color": "fa7d91", "collision": true}
+  ],
+  "labels": [
+    {"name": "StallSign01", "text": "STALL 1", "position": [-10.0, 2.5, -5.5], "color": "321f52"},
+    {"name": "StallSign02", "text": "STALL 2", "position": [-6.0, 2.5, -5.5], "color": "321f52"},
+    {"name": "StallSign03", "text": "STALL 3", "position": [-2.0, 2.5, -5.5], "color": "321f52"},
+    {"name": "StallSign04", "text": "STALL 4", "position": [2.0, 2.5, 4.15], "color": "321f52"},
+    {"name": "StallSign05", "text": "STALL 5", "position": [6.0, 2.5, 4.15], "color": "321f52"},
+    {"name": "StallSign06", "text": "STALL 6", "position": [10.0, 2.5, 4.15], "color": "321f52"}
+  ],
+  "lights": [
+    {"type": "directional", "name": "SunLamp", "rotation_degrees": [-62.0, 20.0, 0.0], "energy": 1.0, "color": "fff8e8", "shadow": true},
+    {"type": "omni", "name": "NorthLight01", "position": [-9.0, 3.0, -5.8], "range": 9.0, "energy": 3.2, "color": "c8f7ff"},
+    {"type": "omni", "name": "NorthLight02", "position": [-3.0, 3.0, -5.8], "range": 9.0, "energy": 3.2, "color": "c8f7ff"},
+    {"type": "omni", "name": "EastLight01", "position": [3.0, 3.0, 4.2], "range": 9.0, "energy": 3.2, "color": "ffd4e3"},
+    {"type": "omni", "name": "EastLight02", "position": [9.0, 3.0, 4.2], "range": 9.0, "energy": 3.2, "color": "ffd4e3"}
+  ],
+  "environment": {
+    "background_color": "17152f",
+    "ambient_color": "d9c8ff",
+    "ambient_energy": 0.62
+  }
+}

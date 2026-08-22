@@ -1,6 +1,6 @@
 extends Node3D
 
-@onready var game: FirstFlushRestroom = $Restroom
+@onready var game: RestroomRuntime = $Restroom
 
 
 func _ready() -> void:
@@ -13,18 +13,24 @@ func _run_automation_if_requested() -> void:
 	if "--self-test" in arguments or "--export-self-test" in arguments:
 		var success := _run_self_test()
 		if success:
-			print("TB001_TURDS=3")
-			print("TB001_EXIT_UNLOCKED")
-			print("TB001_HEIST_COMPLETE")
+			print("TB_SELF_TEST_OK=%s" % game.level_id)
+			if game.level_id == "restroom_001":
+				print("TB001_TURDS=3")
+				print("TB001_EXIT_UNLOCKED")
+				print("TB001_HEIST_COMPLETE")
 			if "--export-self-test" in arguments:
-				print("TB001_EXPORT_RUNTIME_OK")
+				print("TB_EXPORT_RUNTIME_OK=%s" % game.level_id)
+				if game.level_id == "restroom_001":
+					print("TB001_EXPORT_RUNTIME_OK")
 		get_tree().quit(0 if success else 1)
 		return
 
 	var start_path := _argument_value(arguments, "--screenshot-start=")
 	if not start_path.is_empty():
 		await _capture_screenshot(start_path)
-		print("TB001_SCREENSHOT_START_OK=%s" % start_path)
+		print("TB_SCREENSHOT_OK=%s" % start_path)
+		if game.level_id == "restroom_001":
+			print("TB001_SCREENSHOT_START_OK=%s" % start_path)
 		get_tree().quit()
 		return
 
@@ -34,27 +40,34 @@ func _run_automation_if_requested() -> void:
 			get_tree().quit(1)
 			return
 		await _capture_screenshot(complete_path)
-		print("TB001_SCREENSHOT_COMPLETE_OK=%s" % complete_path)
+		print("TB_SCREENSHOT_OK=%s" % complete_path)
+		if game.level_id == "restroom_001":
+			print("TB001_SCREENSHOT_COMPLETE_OK=%s" % complete_path)
 		get_tree().quit()
 
 
 func _run_self_test() -> bool:
 	if game.collected_turds != 0 or not game.heist_exit.is_locked:
-		push_error("TB001 self-test initial state failed")
+		push_error("Self-test initial state failed for %s" % game.level_id)
 		return false
-	if not game.toilets[0].collect():
-		return false
-	if game.collected_turds != 1 or game.toilets[0].has_turd:
-		return false
-	if game.toilets[0].collect() or game.collected_turds != 1:
-		return false
-	game.toilets[1].collect()
-	game.toilets[2].collect()
-	if game.collected_turds != 3 or game.heist_exit.is_locked:
+	var collected := 0
+	for toilet in game.toilets:
+		if not toilet.has_turd:
+			if toilet.collect():
+				return false
+			continue
+		if not toilet.collect():
+			return false
+		collected += 1
+		if toilet.collect() or game.collected_turds != collected:
+			return false
+		if collected < game.required_turds and not game.heist_exit.is_locked:
+			return false
+	if game.collected_turds != game.required_turds or game.heist_exit.is_locked:
 		return false
 	if not game.heist_exit.attempt_exit(game.player):
 		return false
-	return game.state == FirstFlushRestroom.HeistState.HEIST_COMPLETE
+	return game.state == RestroomRuntime.HeistState.HEIST_COMPLETE
 
 
 func _capture_screenshot(path: String) -> void:

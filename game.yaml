@@ -7,15 +7,16 @@ engine:
   version: "4.7.2"
 
 slice:
-  id: TB-001
-  name: "First Flush"
+  id: TB-002
+  name: "Second Flush"
 
-level:
-  id: restroom_001
-  name: "First Flush"
-
-objective:
-  turds_required: 3
+levels:
+  - id: restroom_001
+    name: "First Flush"
+    turds_required: 3
+  - id: restroom_002
+    name: "Second Flush"
+    turds_required: 5
 
 platforms:
   - linux_x86_64
