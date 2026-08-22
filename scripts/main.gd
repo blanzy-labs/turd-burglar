@@ -4,6 +4,8 @@ extends Node3D
 
 
 func _ready() -> void:
+	if not game.load_error.is_empty():
+		return
 	print("TURD_BURGLAR_RUNTIME_OK")
 	call_deferred("_run_automation_if_requested")
 
