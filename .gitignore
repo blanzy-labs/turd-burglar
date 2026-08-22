@@ -4,6 +4,7 @@ build/*
 *.log
 
 # OpenClaw workspace state is local orchestration data, not game source.
+BOOTSTRAP.md
 HEARTBEAT.md
 IDENTITY.md
 SOUL.md
