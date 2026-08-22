@@ -1,0 +1,62 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/player.gd" id="1_player"]
+
+[sub_resource type="StandardMaterial3D" id="Material_body"]
+albedo_color = Color(0.12, 0.16, 0.2, 1)
+roughness = 0.9
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape_player"]
+radius = 0.35
+height = 1.8
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_body"]
+material = SubResource("Material_body")
+radius = 0.33
+height = 1.25
+
+[sub_resource type="StandardMaterial3D" id="Material_head"]
+albedo_color = Color(0.92, 0.72, 0.5, 1)
+roughness = 0.95
+
+[sub_resource type="SphereMesh" id="SphereMesh_head"]
+material = SubResource("Material_head")
+radius = 0.28
+height = 0.56
+
+[sub_resource type="StandardMaterial3D" id="Material_mask"]
+albedo_color = Color(0.04, 0.04, 0.06, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_mask"]
+material = SubResource("Material_mask")
+size = Vector3(0.5, 0.16, 0.08)
+
+[node name="Player" type="CharacterBody3D"]
+script = ExtResource("1_player")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+position = Vector3(0, 0.9, 0)
+shape = SubResource("CapsuleShape_player")
+
+[node name="Body" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.82, 0)
+mesh = SubResource("CapsuleMesh_body")
+
+[node name="Head" type="MeshInstance3D" parent="."]
+position = Vector3(0, 1.62, 0)
+mesh = SubResource("SphereMesh_head")
+
+[node name="Mask" type="MeshInstance3D" parent="."]
+position = Vector3(0, 1.67, -0.255)
+mesh = SubResource("BoxMesh_mask")
+
+[node name="CameraPivot" type="Node3D" parent="."]
+position = Vector3(0, 1.35, 0)
+
+[node name="SpringArm3D" type="SpringArm3D" parent="CameraPivot"]
+spring_length = 4.2
+margin = 0.15
+
+[node name="Camera3D" type="Camera3D" parent="CameraPivot/SpringArm3D"]
+current = true
+fov = 70.0

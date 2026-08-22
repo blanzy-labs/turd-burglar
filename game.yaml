@@ -1,0 +1,21 @@
+game:
+  id: turd-burglar
+  title: "Turd Burglar"
+
+engine:
+  name: godot
+  version: "4.7.2"
+
+slice:
+  id: TB-001
+  name: "First Flush"
+
+level:
+  id: restroom_001
+  name: "First Flush"
+
+objective:
+  turds_required: 3
+
+platforms:
+  - linux_x86_64

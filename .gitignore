@@ -1,0 +1,14 @@
+.godot/
+build/*
+!build/.gitkeep
+*.log
+
+# OpenClaw workspace state is local orchestration data, not game source.
+HEARTBEAT.md
+IDENTITY.md
+SOUL.md
+TOOLS.md
+USER.md
+MEMORY.md
+memory/
+openclaw-workspace-state.json
