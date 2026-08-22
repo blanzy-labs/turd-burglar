@@ -69,6 +69,9 @@ restore_level
 trap - EXIT
 [[ $missing_level_exit -ne 0 ]] || fail removed_data_still_loaded
 grep -Fq 'TB_LEVEL_LOAD_FAILED level=restroom_002 field=file reason=not found' "$artifact_dir/missing-second-flush.log" || fail removed_data_failure_marker
+if grep -Fq 'SCRIPT ERROR' "$artifact_dir/missing-second-flush.log"; then
+  fail removed_data_secondary_script_error
+fi
 [[ -f $level_file ]] || fail data_file_restore
 data_presence_seconds=$(elapsed "$phase_start" "$(date +%s%N)")
 printf 'JSON presence proof ... PASS\n'
