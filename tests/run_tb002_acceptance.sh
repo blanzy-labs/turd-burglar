@@ -77,6 +77,9 @@ data_presence_seconds=$(elapsed "$phase_start" "$(date +%s%N)")
 printf 'JSON presence proof ... PASS\n'
 
 phase_start=$(date +%s%N)
+timeout 30 "$godot_bin" --headless --path "$repo_root" -- --self-test >"$artifact_dir/runtime-default.log" 2>&1 || fail runtime_default
+grep -Fxq 'TB_LEVEL_LOADED=restroom_001' "$artifact_dir/runtime-default.log" || fail runtime_default_level_marker
+grep -Fxq 'TB_SELF_TEST_OK=restroom_001' "$artifact_dir/runtime-default.log" || fail runtime_default_self_test
 for level_id in restroom_001 restroom_002; do
   timeout 30 "$godot_bin" --headless --path "$repo_root" -- --self-test --level="$level_id" >"$artifact_dir/runtime-$level_id.log" 2>&1 || fail "runtime_$level_id"
   grep -Fxq "TB_LEVEL_LOADED=$level_id" "$artifact_dir/runtime-$level_id.log" || fail "runtime_level_marker_$level_id"
@@ -108,6 +111,9 @@ build_seconds=$(elapsed "$phase_start" "$(date +%s%N)")
 printf 'Linux export ......... PASS\n'
 
 phase_start=$(date +%s%N)
+timeout 30 "$binary" --headless -- --export-self-test >"$artifact_dir/exported-default.log" 2>&1 || fail export_runtime_default
+grep -Fxq 'TB_LEVEL_LOADED=restroom_001' "$artifact_dir/exported-default.log" || fail export_default_level_marker
+grep -Fxq 'TB_EXPORT_RUNTIME_OK=restroom_001' "$artifact_dir/exported-default.log" || fail export_default_self_test
 for level_id in restroom_001 restroom_002; do
   timeout 30 "$binary" --headless -- --export-self-test --level="$level_id" >"$artifact_dir/exported-$level_id.log" 2>&1 || fail "export_runtime_$level_id"
   grep -Fxq "TB_LEVEL_LOADED=$level_id" "$artifact_dir/exported-$level_id.log" || fail "export_level_marker_$level_id"
