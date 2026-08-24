@@ -7,6 +7,7 @@ const ALL_LEGS := [
 	"LegRightFront", "LegRightMiddle", "LegRightRear",
 ]
 const STEP_DELTA := 0.016
+const TB_R03_BASELINE_APPROX_FOOT_Y := 0.0891
 
 var neutral: Dictionary = {}
 var initial_player_position: Vector3
@@ -27,11 +28,7 @@ func _run() -> void:
 	initial_player_position = player.global_position
 	var body := player.get_node("Body") as Node3D
 
-	var previous_min := INF
-	for leg_name in ALL_LEGS:
-		var old_leg := body.get_node(leg_name) as Node3D
-		previous_min = minf(previous_min, _part_min_y(body, old_leg))
-	print("TBR03A_PRE_REFINEMENT_APPROX_FOOT_Y=%.4f" % previous_min)
+	print("TBR03A_PRE_REFINEMENT_APPROX_FOOT_Y=%.4f" % TB_R03_BASELINE_APPROX_FOOT_Y)
 
 	for part_name in ["Body", "Thorax", "Abdomen"]:
 		var part: Node3D = body if part_name == "Body" else body.get_node(part_name)
