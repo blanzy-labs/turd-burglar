@@ -1,0 +1,123 @@
+{
+  "id": "restroom_003",
+  "name": "The Porcelain Dimension",
+  "objective": {
+    "turds_required": 9
+  },
+  "player_spawn": [-20.0, 0.05, 20.0],
+  "exit": {
+    "position": [20.0, 0.0, -20.0]
+  },
+  "toilets": [
+    {"id": "cyan_throne", "position": [-19.0, 0.0, -20.0], "rotation_degrees": [0.0, 0.0, 0.0], "has_turd": true},
+    {"id": "vip_lie", "position": [-11.0, 0.0, -20.0], "rotation_degrees": [0.0, 0.0, 0.0], "has_turd": false},
+    {"id": "cistern_corner", "position": [-7.0, 0.0, -8.0], "rotation_degrees": [0.0, 90.0, 0.0], "has_turd": true},
+
+    {"id": "acid_oracle", "position": [7.0, 0.0, -20.0], "rotation_degrees": [0.0, 0.0, 0.0], "has_turd": true},
+    {"id": "lime_twins_a", "position": [15.0, 0.0, -19.0], "rotation_degrees": [0.0, -35.0, 0.0], "has_turd": true},
+    {"id": "emergency_fake", "position": [20.0, 0.0, -8.0], "rotation_degrees": [0.0, -90.0, 0.0], "has_turd": false},
+
+    {"id": "mire_welcome", "position": [-20.0, 0.0, 9.0], "rotation_degrees": [0.0, 90.0, 0.0], "has_turd": true},
+    {"id": "staff_only_empty", "position": [-20.0, 0.0, 18.0], "rotation_degrees": [0.0, 90.0, 0.0], "has_turd": false},
+    {"id": "magenta_monarch", "position": [-8.0, 0.0, 17.0], "rotation_degrees": [0.0, 180.0, 0.0], "has_turd": true},
+
+    {"id": "golden_bowl_a", "position": [8.0, 0.0, 8.0], "rotation_degrees": [0.0, 180.0, 0.0], "has_turd": true},
+    {"id": "golden_bowl_b", "position": [16.0, 0.0, 8.0], "rotation_degrees": [0.0, 180.0, 0.0], "has_turd": true},
+    {"id": "throne_circle", "position": [20.0, 0.0, 19.0], "rotation_degrees": [0.0, -90.0, 0.0], "has_turd": true},
+    {"id": "premium_nothing", "position": [8.0, 0.0, 20.0], "rotation_degrees": [0.0, 180.0, 0.0], "has_turd": false}
+  ],
+  "geometry": [
+    {"type": "box", "name": "FloorCyanCistern", "size": [24.0, 0.4, 24.0], "position": [-12.0, -0.2, -12.0], "color": "176b87", "collision": true},
+    {"type": "box", "name": "FloorAcidAnnex", "size": [24.0, 0.4, 24.0], "position": [12.0, -0.2, -12.0], "color": "52751e", "collision": true},
+    {"type": "box", "name": "FloorMagentaMire", "size": [24.0, 0.4, 24.0], "position": [-12.0, -0.2, 12.0], "color": "76245f", "collision": true},
+    {"type": "box", "name": "FloorGoldenDrain", "size": [24.0, 0.4, 24.0], "position": [12.0, -0.2, 12.0], "color": "8a5b18", "collision": true},
+
+    {"type": "box", "name": "NorthPerimeter", "size": [48.0, 4.5, 0.5], "position": [0.0, 2.25, -24.0], "color": "1b1035", "collision": true},
+    {"type": "box", "name": "SouthPerimeter", "size": [48.0, 4.5, 0.5], "position": [0.0, 2.25, 24.0], "color": "1b1035", "collision": true},
+    {"type": "box", "name": "WestPerimeter", "size": [0.5, 4.5, 48.0], "position": [-24.0, 2.25, 0.0], "color": "1b1035", "collision": true},
+    {"type": "box", "name": "EastPerimeter", "size": [0.5, 4.5, 48.0], "position": [24.0, 2.25, 0.0], "color": "1b1035", "collision": true},
+
+    {"type": "box", "name": "NexusIsland", "size": [4.0, 0.7, 4.0], "position": [0.0, 0.35, 0.0], "color": "f6f1ff", "collision": true},
+    {"type": "box", "name": "NexusColumnNW", "size": [0.8, 4.8, 0.8], "position": [-4.0, 2.4, -4.0], "color": "22e6ff", "collision": true},
+    {"type": "box", "name": "NexusColumnNE", "size": [0.8, 4.8, 0.8], "position": [4.0, 2.4, -4.0], "color": "b9ff38", "collision": true},
+    {"type": "box", "name": "NexusColumnSW", "size": [0.8, 4.8, 0.8], "position": [-4.0, 2.4, 4.0], "color": "ff48c4", "collision": true},
+    {"type": "box", "name": "NexusColumnSE", "size": [0.8, 4.8, 0.8], "position": [4.0, 2.4, 4.0], "color": "ffd84a", "collision": true},
+    {"type": "box", "name": "NexusBeamNorth", "size": [8.8, 0.35, 0.35], "position": [0.0, 4.7, -4.0], "color": "22e6ff", "collision": false},
+    {"type": "box", "name": "NexusBeamEast", "size": [0.35, 0.35, 8.8], "position": [4.0, 4.7, 0.0], "color": "b9ff38", "collision": false},
+    {"type": "box", "name": "NexusBeamSouth", "size": [8.8, 0.35, 0.35], "position": [0.0, 4.7, 4.0], "color": "ffd84a", "collision": false},
+    {"type": "box", "name": "NexusBeamWest", "size": [0.35, 0.35, 8.8], "position": [-4.0, 4.7, 0.0], "color": "ff48c4", "collision": false},
+
+    {"type": "box", "name": "NorthGateLeft", "size": [0.7, 4.0, 2.0], "position": [-3.0, 2.0, -7.0], "color": "22e6ff", "collision": true},
+    {"type": "box", "name": "NorthGateRight", "size": [0.7, 4.0, 2.0], "position": [3.0, 2.0, -7.0], "color": "b9ff38", "collision": true},
+    {"type": "box", "name": "SouthGateLeft", "size": [0.7, 4.0, 2.0], "position": [-3.0, 2.0, 7.0], "color": "ff48c4", "collision": true},
+    {"type": "box", "name": "SouthGateRight", "size": [0.7, 4.0, 2.0], "position": [3.0, 2.0, 7.0], "color": "ffd84a", "collision": true},
+    {"type": "box", "name": "WestGateNorth", "size": [2.0, 4.0, 0.7], "position": [-7.0, 2.0, -3.0], "color": "22e6ff", "collision": true},
+    {"type": "box", "name": "WestGateSouth", "size": [2.0, 4.0, 0.7], "position": [-7.0, 2.0, 3.0], "color": "ff48c4", "collision": true},
+    {"type": "box", "name": "EastGateNorth", "size": [2.0, 4.0, 0.7], "position": [7.0, 2.0, -3.0], "color": "b9ff38", "collision": true},
+    {"type": "box", "name": "EastGateSouth", "size": [2.0, 4.0, 0.7], "position": [7.0, 2.0, 3.0], "color": "ffd84a", "collision": true},
+
+    {"type": "box", "name": "CyanSpineWest", "size": [0.5, 3.4, 13.0], "position": [-15.0, 1.7, -17.5], "color": "2de2e6", "collision": true},
+    {"type": "box", "name": "CyanSpineEast", "size": [0.5, 3.4, 7.0], "position": [-15.0, 1.7, -6.5], "color": "2de2e6", "collision": true},
+    {"type": "box", "name": "CyanCrossNorth", "size": [7.0, 3.4, 0.5], "position": [-20.5, 1.7, -14.0], "color": "168aad", "collision": true},
+    {"type": "box", "name": "CyanCrossEast", "size": [8.0, 3.4, 0.5], "position": [-7.0, 1.7, -14.0], "color": "168aad", "collision": true},
+    {"type": "box", "name": "VipBaitDivider", "size": [0.5, 2.7, 5.0], "position": [-7.5, 1.35, -21.0], "color": "73f7ff", "collision": true},
+    {"type": "box", "name": "VipBaitHeader", "size": [7.0, 0.35, 0.35], "position": [-11.0, 4.0, -17.0], "color": "73f7ff", "collision": false},
+
+    {"type": "box", "name": "AcidSpineNorth", "size": [0.5, 3.4, 8.0], "position": [13.0, 1.7, -20.0], "color": "b6ff35", "collision": true},
+    {"type": "box", "name": "AcidSpineSouth", "size": [0.5, 3.4, 8.0], "position": [13.0, 1.7, -8.0], "color": "b6ff35", "collision": true},
+    {"type": "box", "name": "AcidCrossWest", "size": [7.0, 3.4, 0.5], "position": [6.5, 1.7, -14.5], "color": "84c318", "collision": true},
+    {"type": "box", "name": "AcidCrossEast", "size": [6.0, 3.4, 0.5], "position": [21.0, 1.7, -14.5], "color": "84c318", "collision": true},
+    {"type": "box", "name": "EmergencyPocket", "size": [5.0, 3.0, 0.5], "position": [21.5, 1.5, -4.5], "color": "d6ff6a", "collision": true},
+    {"type": "box", "name": "AcidHazardStripe", "size": [9.0, 0.3, 0.3], "position": [18.0, 3.8, -14.5], "color": "e8ff00", "collision": false},
+
+    {"type": "box", "name": "MireSpineNorth", "size": [0.5, 3.4, 7.0], "position": [-14.0, 1.7, 6.5], "color": "ff3ec9", "collision": true},
+    {"type": "box", "name": "MireSpineSouth", "size": [0.5, 3.4, 10.0], "position": [-14.0, 1.7, 19.0], "color": "ff3ec9", "collision": true},
+    {"type": "box", "name": "MireCrossWest", "size": [6.0, 3.4, 0.5], "position": [-21.0, 1.7, 13.0], "color": "b72a91", "collision": true},
+    {"type": "box", "name": "MireCrossEast", "size": [7.0, 3.4, 0.5], "position": [-7.5, 1.7, 13.0], "color": "b72a91", "collision": true},
+    {"type": "box", "name": "StaffBaitDivider", "size": [5.0, 2.8, 0.5], "position": [-21.5, 1.4, 15.0], "color": "ff82df", "collision": true},
+    {"type": "box", "name": "MireRibbon", "size": [0.35, 0.35, 9.0], "position": [-14.0, 4.2, 18.0], "color": "ff82df", "collision": false},
+
+    {"type": "box", "name": "GoldSpineNorth", "size": [0.5, 3.4, 8.0], "position": [14.0, 1.7, 7.0], "color": "ffd633", "collision": true},
+    {"type": "box", "name": "GoldSpineSouth", "size": [0.5, 3.4, 7.0], "position": [14.0, 1.7, 20.5], "color": "ffd633", "collision": true},
+    {"type": "box", "name": "GoldCrossWest", "size": [7.0, 3.4, 0.5], "position": [6.5, 1.7, 14.0], "color": "d99b18", "collision": true},
+    {"type": "box", "name": "GoldCrossEast", "size": [6.0, 3.4, 0.5], "position": [21.0, 1.7, 14.0], "color": "d99b18", "collision": true},
+    {"type": "box", "name": "PremiumBaitDivider", "size": [0.5, 2.8, 5.0], "position": [5.0, 1.4, 21.0], "color": "ffe878", "collision": true},
+    {"type": "box", "name": "GoldCrown", "size": [9.0, 0.35, 0.35], "position": [18.5, 4.1, 14.0], "color": "fff29a", "collision": false},
+
+    {"type": "box", "name": "CyanZoneBand", "size": [10.0, 0.25, 0.25], "position": [-18.0, 4.25, -4.0], "color": "22e6ff", "collision": false},
+    {"type": "box", "name": "AcidZoneBand", "size": [10.0, 0.25, 0.25], "position": [18.0, 4.25, -4.0], "color": "b9ff38", "collision": false},
+    {"type": "box", "name": "MireZoneBand", "size": [10.0, 0.25, 0.25], "position": [-18.0, 4.25, 4.0], "color": "ff48c4", "collision": false},
+    {"type": "box", "name": "GoldZoneBand", "size": [10.0, 0.25, 0.25], "position": [18.0, 4.25, 4.0], "color": "ffd84a", "collision": false}
+  ],
+  "labels": [
+    {"name": "SpawnWarning", "text": "NO CLEAN GETAWAY", "position": [-20.0, 2.6, 23.65], "rotation_degrees": [0.0, 180.0, 0.0], "color": "ff9be5"},
+    {"name": "NexusSignNorth", "text": "FLUSH NEXUS", "position": [0.0, 3.2, -3.75], "color": "ffffff"},
+    {"name": "NexusSignSouth", "text": "PICK A PIPE", "position": [0.0, 3.2, 3.75], "rotation_degrees": [0.0, 180.0, 0.0], "color": "ffd84a"},
+    {"name": "CyanZoneSign", "text": "CYAN CISTERN", "position": [-18.0, 3.1, -3.75], "color": "62f4ff"},
+    {"name": "VipLieSign", "text": "VIP TURD INSIDE", "position": [-11.0, 2.8, -17.2], "color": "62f4ff"},
+    {"name": "AcidZoneSign", "text": "ACID ANNEX", "position": [18.0, 3.1, -3.75], "color": "caff61"},
+    {"name": "EmergencySign", "text": "EMERGENCY TURD", "position": [21.3, 2.7, -4.8], "rotation_degrees": [0.0, 180.0, 0.0], "color": "caff61"},
+    {"name": "MireZoneSign", "text": "MAGENTA MIRE", "position": [-18.0, 3.1, 3.75], "rotation_degrees": [0.0, 180.0, 0.0], "color": "ff70d4"},
+    {"name": "StaffOnlySign", "text": "STAFF TURDS ONLY", "position": [-21.4, 2.7, 15.3], "color": "ff70d4"},
+    {"name": "GoldZoneSign", "text": "GOLDEN DRAIN", "position": [18.0, 3.1, 3.75], "rotation_degrees": [0.0, 180.0, 0.0], "color": "ffe65c"},
+    {"name": "PremiumSign", "text": "PREMIUM NOTHING", "position": [7.8, 2.8, 22.0], "rotation_degrees": [0.0, 180.0, 0.0], "color": "ffe65c"},
+    {"name": "ExitHint", "text": "ESCAPE / MAYBE", "position": [20.0, 2.7, -23.65], "color": "b9ff38"}
+  ],
+  "lights": [
+    {"type": "directional", "name": "DimensionGlow", "rotation_degrees": [-60.0, -25.0, 0.0], "energy": 0.7, "color": "c9bbff", "shadow": true},
+    {"type": "omni", "name": "CyanBeaconNorth", "position": [-17.0, 3.4, -17.0], "range": 14.0, "energy": 4.2, "color": "19dcff"},
+    {"type": "omni", "name": "CyanBeaconGate", "position": [-8.0, 3.2, -7.0], "range": 11.0, "energy": 3.2, "color": "19dcff"},
+    {"type": "omni", "name": "AcidBeaconNorth", "position": [17.0, 3.4, -17.0], "range": 14.0, "energy": 4.2, "color": "b6ff35"},
+    {"type": "omni", "name": "AcidBeaconGate", "position": [8.0, 3.2, -7.0], "range": 11.0, "energy": 3.2, "color": "b6ff35"},
+    {"type": "omni", "name": "MireBeaconSouth", "position": [-17.0, 3.4, 17.0], "range": 14.0, "energy": 4.2, "color": "ff36c8"},
+    {"type": "omni", "name": "MireBeaconGate", "position": [-8.0, 3.2, 7.0], "range": 11.0, "energy": 3.2, "color": "ff36c8"},
+    {"type": "omni", "name": "GoldBeaconSouth", "position": [17.0, 3.4, 17.0], "range": 14.0, "energy": 4.2, "color": "ffd22e"},
+    {"type": "omni", "name": "GoldBeaconGate", "position": [8.0, 3.2, 7.0], "range": 11.0, "energy": 3.2, "color": "ffd22e"},
+    {"type": "omni", "name": "NexusBeacon", "position": [0.0, 4.2, 0.0], "range": 13.0, "energy": 4.8, "color": "f2e7ff"}
+  ],
+  "environment": {
+    "background_color": "090619",
+    "ambient_color": "6e5da8",
+    "ambient_energy": 0.48
+  }
+}
