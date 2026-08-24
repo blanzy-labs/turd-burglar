@@ -3,6 +3,7 @@ extends SceneTree
 const SOURCE_PATH := "res://levels/restroom_002.json"
 const PROOF_PATH := "user://tb002-data-proof.json"
 const PROOF_SPAWN := Vector3(-8.75, 0.05, 5.25)
+const WRONG_SPAWN := Vector3(3.25, 1.5, -4.75)
 
 
 func _initialize() -> void:
@@ -60,6 +61,9 @@ func _run() -> void:
 	var restroom_scene: PackedScene = load("res://scenes/restroom.tscn")
 	var game: RestroomRuntime = restroom_scene.instantiate()
 	game.level_path_override = PROOF_PATH
+	game.process_mode = Node.PROCESS_MODE_DISABLED
+	if "--force-wrong-spawn" in OS.get_cmdline_user_args():
+		game.child_entered_tree.connect(_force_wrong_player_spawn)
 	root.add_child(game)
 	await process_frame
 	if not game.load_error.is_empty():
@@ -68,7 +72,7 @@ func _run() -> void:
 		return
 	if not game.player.position.is_equal_approx(PROOF_SPAWN):
 		_cleanup_proof()
-		_fail("runtime did not use modified player_spawn")
+		_fail("runtime did not use modified player_spawn: expected=%s actual=%s" % [PROOF_SPAWN, game.player.position])
 		return
 	if game.level_id != "restroom_002" or game.required_turds != 5:
 		_cleanup_proof()
@@ -78,6 +82,12 @@ func _run() -> void:
 	print("TB002_DATA_PROOF_PLAYER_SPAWN=%s" % PROOF_SPAWN)
 	print("TB002_DATA_DRIVEN_PROOF_OK")
 	quit(0)
+
+
+func _force_wrong_player_spawn(child: Node) -> void:
+	if child is BurglarPlayer:
+		(child as BurglarPlayer).position = WRONG_SPAWN
+		print("TBH01_FORCED_WRONG_SPAWN=%s" % WRONG_SPAWN)
 
 
 func _cleanup_proof() -> void:
