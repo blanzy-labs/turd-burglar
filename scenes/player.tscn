@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3]
+[gd_scene load_steps=19 format=3]
 
 [ext_resource type="Script" path="res://scripts/player.gd" id="1_player"]
 
@@ -6,9 +6,34 @@
 albedo_color = Color(0.105, 0.06, 0.13, 1)
 roughness = 0.92
 
-[sub_resource type="StandardMaterial3D" id="Material_thorax"]
-albedo_color = Color(0.19, 0.095, 0.11, 1)
-roughness = 0.94
+[sub_resource type="Shader" id="Shader_thorax_stripes"]
+code = "shader_type spatial;
+render_mode diffuse_lambert, specular_disabled;
+
+uniform vec4 stripe_light : source_color = vec4(0.78, 0.71, 0.55, 1.0);
+uniform vec4 stripe_dark : source_color = vec4(0.035, 0.025, 0.045, 1.0);
+uniform float stripe_count : hint_range(3.0, 5.0, 1.0) = 5.0;
+
+varying float shell_z;
+
+void vertex() {
+	shell_z = VERTEX.z;
+}
+
+void fragment() {
+	float shell_position = clamp((shell_z + 0.38) / 0.76, 0.0, 0.9999);
+	float band = floor(shell_position * stripe_count);
+	float light_band = mod(band, 2.0);
+	ALBEDO = mix(stripe_dark.rgb, stripe_light.rgb, light_band);
+	ROUGHNESS = 0.96;
+}"
+
+[sub_resource type="ShaderMaterial" id="Material_thorax"]
+render_priority = 0
+shader = SubResource("Shader_thorax_stripes")
+shader_parameter/stripe_light = Color(0.78, 0.71, 0.55, 1)
+shader_parameter/stripe_dark = Color(0.035, 0.025, 0.045, 1)
+shader_parameter/stripe_count = 5.0
 
 [sub_resource type="StandardMaterial3D" id="Material_head"]
 albedo_color = Color(0.16, 0.105, 0.205, 1)
@@ -28,10 +53,6 @@ roughness = 0.62
 emission_enabled = true
 emission = Color(0.72, 0.32, 0.055, 1)
 emission_energy_multiplier = 1.45
-
-[sub_resource type="StandardMaterial3D" id="Material_shirt_cream"]
-albedo_color = Color(0.78, 0.71, 0.55, 1)
-roughness = 0.96
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape_player"]
 radius = 0.38
@@ -85,27 +106,6 @@ size = Vector3(0.035, 0.045, 0.74)
 material = SubResource("Material_eye")
 size = Vector3(0.105, 0.055, 0.026)
 
-[sub_resource type="SphereMesh" id="SphereMesh_shirt"]
-material = SubResource("Material_mask")
-radius = 0.365
-height = 0.73
-radial_segments = 8
-rings = 4
-
-[sub_resource type="CylinderMesh" id="CylinderMesh_stripe_cream"]
-material = SubResource("Material_shirt_cream")
-top_radius = 0.37
-bottom_radius = 0.37
-height = 0.095
-radial_segments = 8
-
-[sub_resource type="CylinderMesh" id="CylinderMesh_stripe_dark"]
-material = SubResource("Material_mask")
-top_radius = 0.371
-bottom_radius = 0.371
-height = 0.095
-radial_segments = 8
-
 [node name="Player" type="CharacterBody3D"]
 script = ExtResource("1_player")
 
@@ -142,32 +142,6 @@ mesh = SubResource("BoxMesh_eye")
 [node name="EyeRight" type="MeshInstance3D" parent="Body/Mask"]
 position = Vector3(0.145, 0.015, -0.0405)
 mesh = SubResource("BoxMesh_eye")
-
-[node name="Shirt" type="Node3D" parent="Body"]
-position = Vector3(0, 0.58, -0.42)
-
-[node name="Base" type="MeshInstance3D" parent="Body/Shirt"]
-scale = Vector3(1, 0.78, 1)
-mesh = SubResource("SphereMesh_shirt")
-
-[node name="StripeCreamLower" type="MeshInstance3D" parent="Body/Shirt"]
-position = Vector3(0, -0.19, 0)
-mesh = SubResource("CylinderMesh_stripe_cream")
-
-[node name="StripeDarkLower" type="MeshInstance3D" parent="Body/Shirt"]
-position = Vector3(0, -0.095, 0)
-mesh = SubResource("CylinderMesh_stripe_dark")
-
-[node name="StripeCreamMiddle" type="MeshInstance3D" parent="Body/Shirt"]
-mesh = SubResource("CylinderMesh_stripe_cream")
-
-[node name="StripeDarkUpper" type="MeshInstance3D" parent="Body/Shirt"]
-position = Vector3(0, 0.095, 0)
-mesh = SubResource("CylinderMesh_stripe_dark")
-
-[node name="StripeCreamUpper" type="MeshInstance3D" parent="Body/Shirt"]
-position = Vector3(0, 0.19, 0)
-mesh = SubResource("CylinderMesh_stripe_cream")
 
 [node name="AntennaLeft" type="MeshInstance3D" parent="Body"]
 position = Vector3(-0.17, 0.82, -1.02)
