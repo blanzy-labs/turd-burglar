@@ -55,9 +55,13 @@ rings = 4
 material = SubResource("Material_mask")
 size = Vector3(0.56, 0.18, 0.075)
 
-[sub_resource type="BoxMesh" id="BoxMesh_leg"]
+[sub_resource type="BoxMesh" id="BoxMesh_leg_upper"]
 material = SubResource("Material_limb")
-size = Vector3(0.13, 0.68, 0.13)
+size = Vector3(0.11, 0.34, 0.11)
+
+[sub_resource type="BoxMesh" id="BoxMesh_leg_lower"]
+material = SubResource("Material_limb")
+size = Vector3(0.095, 0.3, 0.095)
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_antenna"]
 material = SubResource("Material_limb")
@@ -113,35 +117,113 @@ position = Vector3(0.17, 0.82, -1.02)
 rotation = Vector3(-0.94, 0, -0.18)
 mesh = SubResource("CapsuleMesh_antenna")
 
-[node name="LegLeftFront" type="MeshInstance3D" parent="Body"]
-position = Vector3(-0.43, 0.35, -0.52)
-rotation = Vector3(-0.35, 0, 0.98)
-mesh = SubResource("BoxMesh_leg")
+[node name="LegLeftFront" type="Node3D" parent="Body"]
+position = Vector3(-0.29, 0.525, -0.48)
+rotation = Vector3(-0.22, 0, -0.75)
 
-[node name="LegLeftMiddle" type="MeshInstance3D" parent="Body"]
-position = Vector3(-0.48, 0.32, -0.05)
-rotation = Vector3(0, 0, 1.08)
-mesh = SubResource("BoxMesh_leg")
+[node name="Upper" type="Node3D" parent="Body/LegLeftFront"]
 
-[node name="LegLeftRear" type="MeshInstance3D" parent="Body"]
-position = Vector3(-0.44, 0.34, 0.43)
-rotation = Vector3(0.35, 0, 0.98)
-mesh = SubResource("BoxMesh_leg")
+[node name="Mesh" type="MeshInstance3D" parent="Body/LegLeftFront/Upper"]
+position = Vector3(0, -0.17, 0)
+mesh = SubResource("BoxMesh_leg_upper")
 
-[node name="LegRightFront" type="MeshInstance3D" parent="Body"]
-position = Vector3(0.43, 0.35, -0.52)
-rotation = Vector3(-0.35, 0, -0.98)
-mesh = SubResource("BoxMesh_leg")
+[node name="Lower" type="Node3D" parent="Body/LegLeftFront/Upper"]
+position = Vector3(0, -0.34, 0)
+rotation = Vector3(0.08, 0, 0.5)
 
-[node name="LegRightMiddle" type="MeshInstance3D" parent="Body"]
-position = Vector3(0.48, 0.32, -0.05)
-rotation = Vector3(0, 0, -1.08)
-mesh = SubResource("BoxMesh_leg")
+[node name="Mesh" type="MeshInstance3D" parent="Body/LegLeftFront/Upper/Lower"]
+position = Vector3(0, -0.15, 0)
+mesh = SubResource("BoxMesh_leg_lower")
 
-[node name="LegRightRear" type="MeshInstance3D" parent="Body"]
-position = Vector3(0.44, 0.34, 0.43)
-rotation = Vector3(0.35, 0, -0.98)
-mesh = SubResource("BoxMesh_leg")
+[node name="LegLeftMiddle" type="Node3D" parent="Body"]
+position = Vector3(-0.31, 0.51, -0.03)
+rotation = Vector3(0, 0, -0.75)
+
+[node name="Upper" type="Node3D" parent="Body/LegLeftMiddle"]
+
+[node name="Mesh" type="MeshInstance3D" parent="Body/LegLeftMiddle/Upper"]
+position = Vector3(0, -0.17, 0)
+mesh = SubResource("BoxMesh_leg_upper")
+
+[node name="Lower" type="Node3D" parent="Body/LegLeftMiddle/Upper"]
+position = Vector3(0, -0.34, 0)
+rotation = Vector3(0, 0, 0.5)
+
+[node name="Mesh" type="MeshInstance3D" parent="Body/LegLeftMiddle/Upper/Lower"]
+position = Vector3(0, -0.15, 0)
+mesh = SubResource("BoxMesh_leg_lower")
+
+[node name="LegLeftRear" type="Node3D" parent="Body"]
+position = Vector3(-0.29, 0.525, 0.42)
+rotation = Vector3(0.22, 0, -0.75)
+
+[node name="Upper" type="Node3D" parent="Body/LegLeftRear"]
+
+[node name="Mesh" type="MeshInstance3D" parent="Body/LegLeftRear/Upper"]
+position = Vector3(0, -0.17, 0)
+mesh = SubResource("BoxMesh_leg_upper")
+
+[node name="Lower" type="Node3D" parent="Body/LegLeftRear/Upper"]
+position = Vector3(0, -0.34, 0)
+rotation = Vector3(-0.08, 0, 0.5)
+
+[node name="Mesh" type="MeshInstance3D" parent="Body/LegLeftRear/Upper/Lower"]
+position = Vector3(0, -0.15, 0)
+mesh = SubResource("BoxMesh_leg_lower")
+
+[node name="LegRightFront" type="Node3D" parent="Body"]
+position = Vector3(0.29, 0.525, -0.48)
+rotation = Vector3(-0.22, 0, 0.75)
+
+[node name="Upper" type="Node3D" parent="Body/LegRightFront"]
+
+[node name="Mesh" type="MeshInstance3D" parent="Body/LegRightFront/Upper"]
+position = Vector3(0, -0.17, 0)
+mesh = SubResource("BoxMesh_leg_upper")
+
+[node name="Lower" type="Node3D" parent="Body/LegRightFront/Upper"]
+position = Vector3(0, -0.34, 0)
+rotation = Vector3(0.08, 0, -0.5)
+
+[node name="Mesh" type="MeshInstance3D" parent="Body/LegRightFront/Upper/Lower"]
+position = Vector3(0, -0.15, 0)
+mesh = SubResource("BoxMesh_leg_lower")
+
+[node name="LegRightMiddle" type="Node3D" parent="Body"]
+position = Vector3(0.31, 0.51, -0.03)
+rotation = Vector3(0, 0, 0.75)
+
+[node name="Upper" type="Node3D" parent="Body/LegRightMiddle"]
+
+[node name="Mesh" type="MeshInstance3D" parent="Body/LegRightMiddle/Upper"]
+position = Vector3(0, -0.17, 0)
+mesh = SubResource("BoxMesh_leg_upper")
+
+[node name="Lower" type="Node3D" parent="Body/LegRightMiddle/Upper"]
+position = Vector3(0, -0.34, 0)
+rotation = Vector3(0, 0, -0.5)
+
+[node name="Mesh" type="MeshInstance3D" parent="Body/LegRightMiddle/Upper/Lower"]
+position = Vector3(0, -0.15, 0)
+mesh = SubResource("BoxMesh_leg_lower")
+
+[node name="LegRightRear" type="Node3D" parent="Body"]
+position = Vector3(0.29, 0.525, 0.42)
+rotation = Vector3(0.22, 0, 0.75)
+
+[node name="Upper" type="Node3D" parent="Body/LegRightRear"]
+
+[node name="Mesh" type="MeshInstance3D" parent="Body/LegRightRear/Upper"]
+position = Vector3(0, -0.17, 0)
+mesh = SubResource("BoxMesh_leg_upper")
+
+[node name="Lower" type="Node3D" parent="Body/LegRightRear/Upper"]
+position = Vector3(0, -0.34, 0)
+rotation = Vector3(-0.08, 0, -0.5)
+
+[node name="Mesh" type="MeshInstance3D" parent="Body/LegRightRear/Upper/Lower"]
+position = Vector3(0, -0.15, 0)
+mesh = SubResource("BoxMesh_leg_lower")
 
 [node name="ShellSeam" type="MeshInstance3D" parent="Body"]
 position = Vector3(0, 0.945, 0.34)

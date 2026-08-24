@@ -26,6 +26,8 @@ var gait_phase := 0.0
 var locomotion_weight := 0.0
 var neutral_body_transform: Transform3D
 var neutral_part_transforms: Dictionary = {}
+var neutral_upper_transforms: Dictionary = {}
+var neutral_lower_transforms: Dictionary = {}
 
 
 func _ready() -> void:
@@ -61,9 +63,13 @@ func _physics_process(delta: float) -> void:
 
 func _capture_neutral_visual_transforms() -> void:
 	neutral_body_transform = visual_body.transform
-	for part_name in LEG_NAMES + [&"Abdomen", &"AntennaLeft", &"AntennaRight"]:
+	for part_name in LEG_NAMES + [&"Thorax", &"Abdomen", &"AntennaLeft", &"AntennaRight"]:
 		var part := visual_body.get_node(NodePath(part_name)) as Node3D
 		neutral_part_transforms[part_name] = part.transform
+	for leg_name: StringName in LEG_NAMES:
+		var leg := visual_body.get_node(NodePath(leg_name)) as Node3D
+		neutral_upper_transforms[leg_name] = (leg.get_node("Upper") as Node3D).transform
+		neutral_lower_transforms[leg_name] = (leg.get_node("Upper/Lower") as Node3D).transform
 
 
 func _update_locomotion(delta: float) -> void:
@@ -84,45 +90,65 @@ func _update_locomotion(delta: float) -> void:
 func _pose_legs() -> void:
 	for leg_name: StringName in LEG_NAMES:
 		var leg := visual_body.get_node(NodePath(leg_name)) as Node3D
-		var neutral: Transform3D = neutral_part_transforms[leg_name]
+		var upper := leg.get_node("Upper") as Node3D
+		var lower := leg.get_node("Upper/Lower") as Node3D
+		var neutral_root: Transform3D = neutral_part_transforms[leg_name]
+		var neutral_upper: Transform3D = neutral_upper_transforms[leg_name]
+		var neutral_lower: Transform3D = neutral_lower_transforms[leg_name]
 		var tripod_sign := 1.0 if leg_name in TRIPOD_A else -1.0
 		var stride := sin(gait_phase) * tripod_sign
 		var role_scale := 0.86 if "Middle" in leg_name else (1.0 if "Front" in leg_name else 0.92)
 		var side_sign := -1.0 if "Left" in leg_name else 1.0
-		var rotation_offset := Vector3(
-			stride * 0.34 * role_scale,
-			stride * side_sign * 0.08,
-			-stride * side_sign * 0.06
+		var swing_curve := pow(maxf(0.0, stride), 1.25)
+		var support_curve := maxf(0.0, -stride)
+		var root_offset := Vector3(stride * 0.10 * role_scale, stride * side_sign * 0.035, 0.0) * locomotion_weight
+		var upper_offset := Vector3(stride * 0.44 * role_scale, stride * side_sign * 0.055, 0.0) * locomotion_weight
+		var lower_offset := Vector3(
+			-stride * 0.14 * role_scale,
+			0.0,
+			side_sign * (swing_curve * 0.42 + support_curve * -0.045)
 		) * locomotion_weight
-		var lift := maxf(0.0, stride) * 0.035 * locomotion_weight
 		leg.transform = Transform3D(
-			neutral.basis * Basis.from_euler(rotation_offset),
-			neutral.origin + Vector3(0.0, lift, stride * 0.018 * locomotion_weight)
+			neutral_root.basis * Basis.from_euler(root_offset),
+			neutral_root.origin
 		)
+		upper.transform = Transform3D(neutral_upper.basis * Basis.from_euler(upper_offset), neutral_upper.origin)
+		lower.transform = Transform3D(neutral_lower.basis * Basis.from_euler(lower_offset), neutral_lower.origin)
 
 
 func _pose_body_and_antennae() -> void:
 	var double_step := sin(gait_phase * 2.0)
+	var support_transfer := sin(gait_phase)
 	var body_euler := neutral_body_transform.basis.get_euler()
 	visual_body.position = neutral_body_transform.origin + Vector3(
 		0.0,
-		0.032 * (0.5 + 0.5 * double_step) * locomotion_weight,
+		0.026 * (0.5 + 0.5 * double_step) * locomotion_weight,
 		0.0
 	)
 	visual_body.rotation = Vector3(
 		body_euler.x,
 		visual_body.rotation.y,
-		0.025 * sin(gait_phase) * locomotion_weight + body_euler.z
+		0.035 * support_transfer * locomotion_weight + body_euler.z
 	)
+
+	var thorax := visual_body.get_node("Thorax") as Node3D
+	var neutral_thorax: Transform3D = neutral_part_transforms[&"Thorax"]
+	var thorax_offset := Vector3(0.018 * double_step, 0.0, 0.024 * support_transfer) * locomotion_weight
+	thorax.transform = Transform3D(neutral_thorax.basis * Basis.from_euler(thorax_offset), neutral_thorax.origin)
+
+	var abdomen := visual_body.get_node("Abdomen") as Node3D
+	var neutral_abdomen: Transform3D = neutral_part_transforms[&"Abdomen"]
+	var abdomen_offset := Vector3(-0.008 * double_step, 0.0, -0.014 * support_transfer) * locomotion_weight
+	abdomen.transform = Transform3D(neutral_abdomen.basis * Basis.from_euler(abdomen_offset), neutral_abdomen.origin)
 
 	for antenna_name: StringName in [&"AntennaLeft", &"AntennaRight"]:
 		var antenna := visual_body.get_node(NodePath(antenna_name)) as Node3D
 		var neutral: Transform3D = neutral_part_transforms[antenna_name]
 		var side_sign := -1.0 if antenna_name == &"AntennaLeft" else 1.0
 		var response := Vector3(
-			0.055 * sin(gait_phase + side_sign * 0.35),
+			0.04 * sin(gait_phase + side_sign * 0.35),
 			0.0,
-			side_sign * 0.025 * double_step
+			side_sign * 0.018 * double_step
 		) * locomotion_weight
 		antenna.transform = Transform3D(neutral.basis * Basis.from_euler(response), neutral.origin)
 
