@@ -1,0 +1,59 @@
+{
+  "id": "restroom_004",
+  "name": "The Triple Flush",
+  "objective": {"turds_required": 7},
+  "player_spawn": [0.0, 0.05, 18.0],
+  "exit": {"position": [0.0, 0.0, -18.0]},
+  "toilets": [
+    {"id": "lobby_left", "position": [-4.8, 0.0, 14.0], "rotation_degrees": [0.0, 90.0, 0.0], "has_turd": true},
+    {"id": "lobby_right", "position": [4.8, 0.0, 11.0], "rotation_degrees": [0.0, -90.0, 0.0], "has_turd": true},
+    {"id": "lobby_decoy", "position": [-5.3, 0.0, 18.0], "rotation_degrees": [0.0, 90.0, 0.0], "has_turd": false},
+    {"id": "middle_left", "position": [-4.8, 0.0, 4.5], "rotation_degrees": [0.0, 90.0, 0.0], "has_turd": true},
+    {"id": "middle_right", "position": [4.8, 0.0, 0.0], "rotation_degrees": [0.0, -90.0, 0.0], "has_turd": true},
+    {"id": "middle_decoy", "position": [5.3, 0.0, 6.8], "rotation_degrees": [0.0, -90.0, 0.0], "has_turd": false},
+    {"id": "vault_left", "position": [-4.8, 0.0, -8.0], "rotation_degrees": [0.0, 90.0, 0.0], "has_turd": true},
+    {"id": "vault_right", "position": [4.8, 0.0, -12.5], "rotation_degrees": [0.0, -90.0, 0.0], "has_turd": true},
+    {"id": "vault_throne", "position": [0.0, 0.0, -16.0], "rotation_degrees": [0.0, 180.0, 0.0], "has_turd": true},
+    {"id": "vault_decoy", "position": [-5.3, 0.0, -18.0], "rotation_degrees": [0.0, 90.0, 0.0], "has_turd": false}
+  ],
+  "doors": [
+    {"id": "door_a", "position": [0.0, 1.5, 8.0], "size": [4.0, 3.0, 0.5], "color": "ff4f72", "open_offset": [0.0, 3.8, 0.0], "open_duration": 0.5},
+    {"id": "door_b", "position": [0.0, 1.5, -4.0], "size": [4.0, 3.0, 0.5], "color": "42e8ff", "open_offset": [0.0, 3.8, 0.0], "open_duration": 0.5}
+  ],
+  "triggers": [
+    {"id": "open_lobby_gate", "type": "collect_count", "threshold": 2, "action": {"type": "open_door", "door_id": "door_a"}},
+    {"id": "open_vault_gate", "type": "collect_count", "threshold": 4, "action": {"type": "open_door", "door_id": "door_b"}}
+  ],
+  "geometry": [
+    {"type": "box", "name": "LobbyFloor", "size": [16.0, 0.4, 14.0], "position": [0.0, -0.2, 15.0], "color": "73345f", "collision": true},
+    {"type": "box", "name": "MiddleFloor", "size": [16.0, 0.4, 12.0], "position": [0.0, -0.2, 2.0], "color": "286f70", "collision": true},
+    {"type": "box", "name": "VaultFloor", "size": [16.0, 0.4, 16.0], "position": [0.0, -0.2, -12.0], "color": "9a6725", "collision": true},
+    {"type": "box", "name": "NorthWall", "size": [16.0, 4.0, 0.5], "position": [0.0, 2.0, 22.0], "color": "24152f", "collision": true},
+    {"type": "box", "name": "SouthWall", "size": [16.0, 4.0, 0.5], "position": [0.0, 2.0, -20.0], "color": "24152f", "collision": true},
+    {"type": "box", "name": "WestWall", "size": [0.5, 4.0, 42.0], "position": [-8.0, 2.0, 1.0], "color": "302046", "collision": true},
+    {"type": "box", "name": "EastWall", "size": [0.5, 4.0, 42.0], "position": [8.0, 2.0, 1.0], "color": "302046", "collision": true},
+    {"type": "box", "name": "GateA_Left", "size": [6.0, 4.0, 0.5], "position": [-5.0, 2.0, 8.0], "color": "b02d55", "collision": true},
+    {"type": "box", "name": "GateA_Right", "size": [6.0, 4.0, 0.5], "position": [5.0, 2.0, 8.0], "color": "b02d55", "collision": true},
+    {"type": "box", "name": "GateA_Header", "size": [4.0, 1.0, 0.5], "position": [0.0, 3.5, 8.0], "color": "ffb0c1", "collision": false},
+    {"type": "box", "name": "GateB_Left", "size": [6.0, 4.0, 0.5], "position": [-5.0, 2.0, -4.0], "color": "177e91", "collision": true},
+    {"type": "box", "name": "GateB_Right", "size": [6.0, 4.0, 0.5], "position": [5.0, 2.0, -4.0], "color": "177e91", "collision": true},
+    {"type": "box", "name": "GateB_Header", "size": [4.0, 1.0, 0.5], "position": [0.0, 3.5, -4.0], "color": "a9f6ff", "collision": false},
+    {"type": "box", "name": "LobbyStripe", "size": [0.25, 0.08, 10.0], "position": [0.0, 0.04, 15.0], "color": "ff78a0", "collision": false},
+    {"type": "box", "name": "MiddleStripe", "size": [0.25, 0.08, 8.0], "position": [0.0, 0.04, 2.0], "color": "52f3dd", "collision": false},
+    {"type": "box", "name": "VaultStripe", "size": [0.25, 0.08, 12.0], "position": [0.0, 0.04, -12.0], "color": "ffd65a", "collision": false}
+  ],
+  "labels": [
+    {"name": "LobbyLabel", "text": "AREA 1: DIRTY LOBBY", "position": [0.0, 3.2, 21.7], "rotation_degrees": [0.0, 180.0, 0.0], "color": "ff9cbb"},
+    {"name": "GateALabel", "text": "GATE A / 2 TURDS", "position": [0.0, 3.55, 8.28], "rotation_degrees": [0.0, 180.0, 0.0], "color": "ffffff"},
+    {"name": "MiddleLabel", "text": "AREA 2: PIPEWORK", "position": [0.0, 3.2, 7.7], "color": "86fff1"},
+    {"name": "GateBLabel", "text": "GATE B / 4 TURDS", "position": [0.0, 3.55, -3.72], "rotation_degrees": [0.0, 180.0, 0.0], "color": "ffffff"},
+    {"name": "VaultLabel", "text": "AREA 3: GOLDEN VAULT", "position": [0.0, 3.2, -19.7], "color": "ffe47a"}
+  ],
+  "lights": [
+    {"type": "directional", "name": "MainLight", "rotation_degrees": [-55.0, -20.0, 0.0], "energy": 0.8, "color": "e8e1ff", "shadow": true},
+    {"type": "omni", "name": "LobbyLight", "position": [0.0, 3.0, 15.0], "range": 12.0, "energy": 3.8, "color": "ff76ad"},
+    {"type": "omni", "name": "MiddleLight", "position": [0.0, 3.0, 2.0], "range": 11.0, "energy": 3.8, "color": "46f2dc"},
+    {"type": "omni", "name": "VaultLight", "position": [0.0, 3.0, -12.0], "range": 13.0, "energy": 4.0, "color": "ffd255"}
+  ],
+  "environment": {"background_color": "130e22", "ambient_color": "c6b9df", "ambient_energy": 0.48}
+}

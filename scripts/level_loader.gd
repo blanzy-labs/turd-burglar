@@ -121,6 +121,28 @@ static func validate_level(raw: Dictionary, level_label: String = "inline", expe
 			"must equal collectible toilet count (%d), found %d" % [collectible_count, required_turds]
 		)
 
+	var doors: Array[Dictionary] = []
+	var door_ids := {}
+	if raw.has("doors"):
+		if typeof(raw.doors) != TYPE_ARRAY:
+			return _failure(level_label, "doors", "must be an array")
+		for index in raw.doors.size():
+			var result := _normalize_door(raw.doors[index], index, level_label, door_ids)
+			if not result.ok:
+				return result
+			doors.append(result.value)
+
+	var triggers: Array[Dictionary] = []
+	var trigger_ids := {}
+	if raw.has("triggers"):
+		if typeof(raw.triggers) != TYPE_ARRAY:
+			return _failure(level_label, "triggers", "must be an array")
+		for index in raw.triggers.size():
+			var result := _normalize_trigger(raw.triggers[index], index, level_label, trigger_ids, door_ids, required_turds)
+			if not result.ok:
+				return result
+			triggers.append(result.value)
+
 	if not raw.has("geometry") or typeof(raw.geometry) != TYPE_ARRAY or raw.geometry.is_empty():
 		return _failure(level_label, "geometry", "must be a non-empty array")
 	var geometry: Array[Dictionary] = []
@@ -171,9 +193,89 @@ static func validate_level(raw: Dictionary, level_label: String = "inline", expe
 			"lights": lights,
 			"environment": environment_result.value,
 			"labels": labels,
+			"doors": doors,
+			"triggers": triggers,
 			"collectible_turd_count": collectible_count,
 		},
 	}
+
+
+static func _normalize_door(value, index: int, level_label: String, ids: Dictionary) -> Dictionary:
+	var field := "doors[%d]" % index
+	if typeof(value) != TYPE_DICTIONARY:
+		return _failure(level_label, field, "must be an object")
+	var door: Dictionary = value
+	var id_result := _required_string(door, "id", level_label, "%s.id" % field)
+	if not id_result.ok:
+		return id_result
+	var door_id: String = id_result.value
+	if ids.has(door_id):
+		return _failure(level_label, "%s.id" % field, "duplicate door id: %s" % door_id)
+	ids[door_id] = true
+	var position_result := _required_vector(door, "position", level_label, "%s.position" % field)
+	if not position_result.ok:
+		return position_result
+	var size_result := _required_vector(door, "size", level_label, "%s.size" % field)
+	if not size_result.ok:
+		return size_result
+	var size: Vector3 = size_result.value
+	if size.x <= 0.0 or size.y <= 0.0 or size.z <= 0.0:
+		return _failure(level_label, "%s.size" % field, "components must be greater than zero")
+	var color_result := _required_color(door, "color", level_label, "%s.color" % field)
+	if not color_result.ok:
+		return color_result
+	var offset_result := _required_vector(door, "open_offset", level_label, "%s.open_offset" % field)
+	if not offset_result.ok:
+		return offset_result
+	var duration = door.get("open_duration", 0.5)
+	if not _is_number(duration) or not is_finite(float(duration)) or float(duration) <= 0.0:
+		return _failure(level_label, "%s.open_duration" % field, "must be a finite number greater than zero")
+	return {"ok": true, "value": {
+		"id": door_id,
+		"position": position_result.value,
+		"size": size,
+		"color": color_result.value,
+		"open_offset": offset_result.value,
+		"open_duration": float(duration),
+	}}
+
+
+static func _normalize_trigger(value, index: int, level_label: String, ids: Dictionary, door_ids: Dictionary, required_turds: int) -> Dictionary:
+	var field := "triggers[%d]" % index
+	if typeof(value) != TYPE_DICTIONARY:
+		return _failure(level_label, field, "must be an object")
+	var trigger: Dictionary = value
+	var id_result := _required_string(trigger, "id", level_label, "%s.id" % field)
+	if not id_result.ok:
+		return id_result
+	var trigger_id: String = id_result.value
+	if ids.has(trigger_id):
+		return _failure(level_label, "%s.id" % field, "duplicate trigger id: %s" % trigger_id)
+	ids[trigger_id] = true
+	if not trigger.has("type") or typeof(trigger.type) != TYPE_STRING or trigger.type != "collect_count":
+		return _failure(level_label, "%s.type" % field, "unsupported trigger type; expected collect_count")
+	if not trigger.has("threshold") or not _is_integer_number(trigger.threshold):
+		return _failure(level_label, "%s.threshold" % field, "must be an integer")
+	var threshold := int(trigger.threshold)
+	if threshold < 1 or threshold > required_turds:
+		return _failure(level_label, "%s.threshold" % field, "must be from 1 through objective.turds_required (%d)" % required_turds)
+	if not trigger.has("action") or typeof(trigger.action) != TYPE_DICTIONARY:
+		return _failure(level_label, "%s.action" % field, "required object is missing")
+	var action: Dictionary = trigger.action
+	if not action.has("type") or typeof(action.type) != TYPE_STRING or action.type != "open_door":
+		return _failure(level_label, "%s.action.type" % field, "unsupported action type; expected open_door")
+	var door_id_result := _required_string(action, "door_id", level_label, "%s.action.door_id" % field)
+	if not door_id_result.ok:
+		return door_id_result
+	var door_id: String = door_id_result.value
+	if not door_ids.has(door_id):
+		return _failure(level_label, "%s.action.door_id" % field, "unknown door reference: %s" % door_id)
+	return {"ok": true, "value": {
+		"id": trigger_id,
+		"type": "collect_count",
+		"threshold": threshold,
+		"action": {"type": "open_door", "door_id": door_id},
+	}}
 
 
 static func _normalize_geometry(value, index: int, level_label: String, names: Dictionary) -> Dictionary:

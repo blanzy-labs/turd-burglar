@@ -6,6 +6,7 @@ enum HeistState { PLAYING, EXIT_AVAILABLE, HEIST_COMPLETE }
 const PLAYER_SCENE := preload("res://scenes/player.tscn")
 const TOILET_SCENE := preload("res://scenes/toilet.tscn")
 const EXIT_SCENE := preload("res://scenes/exit.tscn")
+const DOOR_SCENE := preload("res://scenes/door.tscn")
 
 @export_file("*.json") var level_path_override := ""
 
@@ -20,6 +21,9 @@ var load_error := ""
 var toilets: Array[TurdToilet] = []
 var player: BurglarPlayer
 var heist_exit: HeistExit
+var doors_by_id := {}
+var trigger_fired := {}
+var trigger_fire_count := {}
 
 var counter_label: Label
 var prompt_label: Label
@@ -89,6 +93,7 @@ func request_restart() -> void:
 
 func _on_toilet_collected(_toilet: TurdToilet) -> void:
 	collected_turds += 1
+	_evaluate_triggers()
 	if collected_turds == required_turds:
 		state = HeistState.EXIT_AVAILABLE
 		heist_exit.set_locked(false)
@@ -98,6 +103,15 @@ func _on_toilet_collected(_toilet: TurdToilet) -> void:
 	_update_hud()
 
 
+func _evaluate_triggers() -> void:
+	for trigger: Dictionary in level_definition.triggers:
+		if trigger_fired[trigger.id] or collected_turds < trigger.threshold:
+			continue
+		trigger_fired[trigger.id] = true
+		trigger_fire_count[trigger.id] += 1
+		doors_by_id[trigger.action.door_id].open()
+
+
 func _update_hud() -> void:
 	counter_label.text = "TURDS: %d / %d" % [collected_turds, required_turds]
 	status_label.visible = state == HeistState.EXIT_AVAILABLE
@@ -105,6 +119,15 @@ func _update_hud() -> void:
 
 
 func _spawn_gameplay() -> void:
+	for door_data: Dictionary in level_definition.doors:
+		var door: StatefulDoor = DOOR_SCENE.instantiate()
+		door.configure(door_data)
+		add_child(door)
+		doors_by_id[door_data.id] = door
+	for trigger: Dictionary in level_definition.triggers:
+		trigger_fired[trigger.id] = false
+		trigger_fire_count[trigger.id] = 0
+
 	for toilet_data: Dictionary in level_definition.toilets:
 		var toilet: TurdToilet = TOILET_SCENE.instantiate()
 		toilet.name = toilet_data.id
