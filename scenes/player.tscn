@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3]
+[gd_scene load_steps=22 format=3]
 
 [ext_resource type="Script" path="res://scripts/player.gd" id="1_player"]
 
@@ -23,8 +23,15 @@ albedo_color = Color(0.012, 0.01, 0.018, 1)
 roughness = 0.82
 
 [sub_resource type="StandardMaterial3D" id="Material_eye"]
-albedo_color = Color(0.62, 0.48, 0.22, 1)
-roughness = 0.75
+albedo_color = Color(0.9, 0.66, 0.2, 1)
+roughness = 0.62
+emission_enabled = true
+emission = Color(0.72, 0.32, 0.055, 1)
+emission_energy_multiplier = 1.45
+
+[sub_resource type="StandardMaterial3D" id="Material_shirt_cream"]
+albedo_color = Color(0.78, 0.71, 0.55, 1)
+roughness = 0.96
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape_player"]
 radius = 0.38
@@ -78,6 +85,27 @@ size = Vector3(0.035, 0.045, 0.74)
 material = SubResource("Material_eye")
 size = Vector3(0.105, 0.055, 0.026)
 
+[sub_resource type="SphereMesh" id="SphereMesh_shirt"]
+material = SubResource("Material_mask")
+radius = 0.365
+height = 0.73
+radial_segments = 8
+rings = 4
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_stripe_cream"]
+material = SubResource("Material_shirt_cream")
+top_radius = 0.37
+bottom_radius = 0.37
+height = 0.095
+radial_segments = 8
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_stripe_dark"]
+material = SubResource("Material_mask")
+top_radius = 0.371
+bottom_radius = 0.371
+height = 0.095
+radial_segments = 8
+
 [node name="Player" type="CharacterBody3D"]
 script = ExtResource("1_player")
 
@@ -106,6 +134,40 @@ mesh = SubResource("SphereMesh_head")
 position = Vector3(0, 0.64, -1.118)
 rotation = Vector3(-0.12, 0, 0)
 mesh = SubResource("BoxMesh_mask")
+
+[node name="EyeLeft" type="MeshInstance3D" parent="Body/Mask"]
+position = Vector3(-0.145, 0.015, -0.0405)
+mesh = SubResource("BoxMesh_eye")
+
+[node name="EyeRight" type="MeshInstance3D" parent="Body/Mask"]
+position = Vector3(0.145, 0.015, -0.0405)
+mesh = SubResource("BoxMesh_eye")
+
+[node name="Shirt" type="Node3D" parent="Body"]
+position = Vector3(0, 0.58, -0.42)
+
+[node name="Base" type="MeshInstance3D" parent="Body/Shirt"]
+scale = Vector3(1, 0.78, 1)
+mesh = SubResource("SphereMesh_shirt")
+
+[node name="StripeCreamLower" type="MeshInstance3D" parent="Body/Shirt"]
+position = Vector3(0, -0.19, 0)
+mesh = SubResource("CylinderMesh_stripe_cream")
+
+[node name="StripeDarkLower" type="MeshInstance3D" parent="Body/Shirt"]
+position = Vector3(0, -0.095, 0)
+mesh = SubResource("CylinderMesh_stripe_dark")
+
+[node name="StripeCreamMiddle" type="MeshInstance3D" parent="Body/Shirt"]
+mesh = SubResource("CylinderMesh_stripe_cream")
+
+[node name="StripeDarkUpper" type="MeshInstance3D" parent="Body/Shirt"]
+position = Vector3(0, 0.095, 0)
+mesh = SubResource("CylinderMesh_stripe_dark")
+
+[node name="StripeCreamUpper" type="MeshInstance3D" parent="Body/Shirt"]
+position = Vector3(0, 0.19, 0)
+mesh = SubResource("CylinderMesh_stripe_cream")
 
 [node name="AntennaLeft" type="MeshInstance3D" parent="Body"]
 position = Vector3(-0.17, 0.82, -1.02)
@@ -228,16 +290,6 @@ mesh = SubResource("BoxMesh_leg_lower")
 [node name="ShellSeam" type="MeshInstance3D" parent="Body"]
 position = Vector3(0, 0.945, 0.34)
 mesh = SubResource("BoxMesh_seam")
-
-[node name="EyeLeft" type="MeshInstance3D" parent="Body"]
-position = Vector3(-0.145, 0.65, -1.16)
-rotation = Vector3(-0.12, 0, 0)
-mesh = SubResource("BoxMesh_eye")
-
-[node name="EyeRight" type="MeshInstance3D" parent="Body"]
-position = Vector3(0.145, 0.65, -1.16)
-rotation = Vector3(-0.12, 0, 0)
-mesh = SubResource("BoxMesh_eye")
 
 [node name="CameraPivot" type="Node3D" parent="."]
 position = Vector3(0, 1.15, 0)
