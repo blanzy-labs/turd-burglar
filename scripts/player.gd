@@ -5,19 +5,34 @@ const MOVE_SPEED := 5.0
 const GRAVITY := 18.0
 const MOUSE_SENSITIVITY := 0.003
 const INTERACTION_RANGE := 2.65
+const GAIT_IDLE_SPEED := 0.08
+const GAIT_BLEND_SPEED := 4.5
+const GAIT_MIN_FREQUENCY := 2.2
+const GAIT_MAX_FREQUENCY := 4.8
+const TRIPOD_A := [&"LegLeftFront", &"LegLeftRear", &"LegRightMiddle"]
+const LEG_NAMES := [
+	&"LegLeftFront", &"LegLeftMiddle", &"LegLeftRear",
+	&"LegRightFront", &"LegRightMiddle", &"LegRightRear",
+]
 
 @onready var camera_pivot: Node3D = $CameraPivot
+@onready var visual_body: Node3D = $Body
 
 var camera_yaw := 0.0
 var camera_pitch := -0.18
 var game: Node
 var nearby_toilet: Node
+var gait_phase := 0.0
+var locomotion_weight := 0.0
+var neutral_body_transform: Transform3D
+var neutral_part_transforms: Dictionary = {}
 
 
 func _ready() -> void:
 	add_to_group("player")
 	game = get_parent()
 	_ensure_input_actions()
+	_capture_neutral_visual_transforms()
 	camera_pivot.rotation = Vector3(camera_pitch, camera_yaw, 0.0)
 	if not _automation_requested():
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -40,7 +55,76 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.y = -0.2
 	move_and_slide()
+	_update_locomotion(delta)
 	_update_interaction_target()
+
+
+func _capture_neutral_visual_transforms() -> void:
+	neutral_body_transform = visual_body.transform
+	for part_name in LEG_NAMES + [&"Abdomen", &"AntennaLeft", &"AntennaRight"]:
+		var part := visual_body.get_node(NodePath(part_name)) as Node3D
+		neutral_part_transforms[part_name] = part.transform
+
+
+func _update_locomotion(delta: float) -> void:
+	var horizontal_speed := Vector2(velocity.x, velocity.z).length()
+	var is_moving := horizontal_speed > GAIT_IDLE_SPEED
+	var target_weight := 1.0 if is_moving else 0.0
+	locomotion_weight = move_toward(locomotion_weight, target_weight, GAIT_BLEND_SPEED * delta)
+
+	if is_moving:
+		var speed_factor := clampf(horizontal_speed / MOVE_SPEED, 0.0, 1.0)
+		var frequency := lerpf(GAIT_MIN_FREQUENCY, GAIT_MAX_FREQUENCY, speed_factor)
+		gait_phase = fposmod(gait_phase + TAU * frequency * delta, TAU)
+
+	_pose_legs()
+	_pose_body_and_antennae()
+
+
+func _pose_legs() -> void:
+	for leg_name: StringName in LEG_NAMES:
+		var leg := visual_body.get_node(NodePath(leg_name)) as Node3D
+		var neutral: Transform3D = neutral_part_transforms[leg_name]
+		var tripod_sign := 1.0 if leg_name in TRIPOD_A else -1.0
+		var stride := sin(gait_phase) * tripod_sign
+		var role_scale := 0.86 if "Middle" in leg_name else (1.0 if "Front" in leg_name else 0.92)
+		var side_sign := -1.0 if "Left" in leg_name else 1.0
+		var rotation_offset := Vector3(
+			stride * 0.34 * role_scale,
+			stride * side_sign * 0.08,
+			-stride * side_sign * 0.06
+		) * locomotion_weight
+		var lift := maxf(0.0, stride) * 0.035 * locomotion_weight
+		leg.transform = Transform3D(
+			neutral.basis * Basis.from_euler(rotation_offset),
+			neutral.origin + Vector3(0.0, lift, stride * 0.018 * locomotion_weight)
+		)
+
+
+func _pose_body_and_antennae() -> void:
+	var double_step := sin(gait_phase * 2.0)
+	var body_euler := neutral_body_transform.basis.get_euler()
+	visual_body.position = neutral_body_transform.origin + Vector3(
+		0.0,
+		0.032 * (0.5 + 0.5 * double_step) * locomotion_weight,
+		0.0
+	)
+	visual_body.rotation = Vector3(
+		body_euler.x,
+		visual_body.rotation.y,
+		0.025 * sin(gait_phase) * locomotion_weight + body_euler.z
+	)
+
+	for antenna_name: StringName in [&"AntennaLeft", &"AntennaRight"]:
+		var antenna := visual_body.get_node(NodePath(antenna_name)) as Node3D
+		var neutral: Transform3D = neutral_part_transforms[antenna_name]
+		var side_sign := -1.0 if antenna_name == &"AntennaLeft" else 1.0
+		var response := Vector3(
+			0.055 * sin(gait_phase + side_sign * 0.35),
+			0.0,
+			side_sign * 0.025 * double_step
+		) * locomotion_weight
+		antenna.transform = Transform3D(neutral.basis * Basis.from_euler(response), neutral.origin)
 
 
 func _unhandled_input(event: InputEvent) -> void:
