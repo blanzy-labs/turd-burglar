@@ -133,9 +133,9 @@ func _run() -> void:
 		_step_player(player, [], 1.0, STEP_DELTA, true)
 	var min_leg_y := INF
 	for leg_name in ALL_LEGS:
-		var leg := body.get_node(leg_name) as MeshInstance3D
-		var local_bounds: AABB = body.transform * leg.transform * leg.get_aabb()
-		min_leg_y = minf(min_leg_y, local_bounds.position.y)
+		var leg := body.get_node(leg_name) as Node3D
+		min_leg_y = minf(min_leg_y, _part_min_y(body, leg))
+	print("TBR03_APPROX_LEG_MIN_Y=%.4f" % min_leg_y)
 	if min_leg_y < -0.1 or min_leg_y > 0.14:
 		_fail("leg grounding outside practical floor range: %.3f" % min_leg_y)
 		return
@@ -217,6 +217,24 @@ func _legs_near_neutral(body: Node3D, position_tolerance: float, angle_tolerance
 
 func _transform_distance(a: Transform3D, b: Transform3D) -> float:
 	return a.origin.distance_to(b.origin) + a.basis.get_rotation_quaternion().angle_to(b.basis.get_rotation_quaternion())
+
+
+func _part_min_y(body: Node3D, part: Node3D) -> float:
+	var meshes: Array[MeshInstance3D] = []
+	_collect_meshes(part, meshes)
+	var result := INF
+	for mesh_node in meshes:
+		var relative := body.global_transform.affine_inverse() * mesh_node.global_transform
+		var local_bounds: AABB = body.transform * relative * mesh_node.get_aabb()
+		result = minf(result, local_bounds.position.y)
+	return result
+
+
+func _collect_meshes(node: Node, output: Array[MeshInstance3D]) -> void:
+	if node is MeshInstance3D and (node as MeshInstance3D).mesh != null:
+		output.append(node as MeshInstance3D)
+	for child in node.get_children():
+		_collect_meshes(child, output)
 
 
 func _capture_pose(player: BurglarPlayer, body: Node3D, pose: String, screenshot_path: String) -> void:
