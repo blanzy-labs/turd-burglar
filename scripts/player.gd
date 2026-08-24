@@ -30,7 +30,7 @@ func _physics_process(delta: float) -> void:
 		velocity.x = direction.x * MOVE_SPEED
 		velocity.z = direction.z * MOVE_SPEED
 		if direction.length_squared() > 0.01:
-			$Body.rotation.y = lerp_angle($Body.rotation.y, atan2(-direction.x, -direction.z), delta * 10.0)
+			$Body.rotation.y = lerp_angle($Body.rotation.y, camera_yaw, delta * 10.0)
 	else:
 		velocity.x = move_toward(velocity.x, 0.0, MOVE_SPEED)
 		velocity.z = move_toward(velocity.z, 0.0, MOVE_SPEED)
