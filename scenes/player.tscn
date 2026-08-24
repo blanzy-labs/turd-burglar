@@ -1,57 +1,164 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=18 format=3]
 
 [ext_resource type="Script" path="res://scripts/player.gd" id="1_player"]
 
-[sub_resource type="StandardMaterial3D" id="Material_body"]
-albedo_color = Color(0.12, 0.16, 0.2, 1)
-roughness = 0.9
+[sub_resource type="StandardMaterial3D" id="Material_abdomen"]
+albedo_color = Color(0.105, 0.06, 0.13, 1)
+roughness = 0.92
 
-[sub_resource type="CapsuleShape3D" id="CapsuleShape_player"]
-radius = 0.35
-height = 1.8
-
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_body"]
-material = SubResource("Material_body")
-radius = 0.33
-height = 1.25
+[sub_resource type="StandardMaterial3D" id="Material_thorax"]
+albedo_color = Color(0.19, 0.095, 0.11, 1)
+roughness = 0.94
 
 [sub_resource type="StandardMaterial3D" id="Material_head"]
-albedo_color = Color(0.92, 0.72, 0.5, 1)
-roughness = 0.95
+albedo_color = Color(0.16, 0.105, 0.205, 1)
+roughness = 0.9
+
+[sub_resource type="StandardMaterial3D" id="Material_limb"]
+albedo_color = Color(0.085, 0.07, 0.095, 1)
+roughness = 0.98
+
+[sub_resource type="StandardMaterial3D" id="Material_mask"]
+albedo_color = Color(0.012, 0.01, 0.018, 1)
+roughness = 0.82
+
+[sub_resource type="StandardMaterial3D" id="Material_eye"]
+albedo_color = Color(0.62, 0.48, 0.22, 1)
+roughness = 0.75
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape_player"]
+radius = 0.38
+height = 1.15
+
+[sub_resource type="SphereMesh" id="SphereMesh_abdomen"]
+material = SubResource("Material_abdomen")
+radius = 0.5
+height = 1.0
+radial_segments = 8
+rings = 4
+
+[sub_resource type="SphereMesh" id="SphereMesh_thorax"]
+material = SubResource("Material_thorax")
+radius = 0.38
+height = 0.76
+radial_segments = 8
+rings = 4
 
 [sub_resource type="SphereMesh" id="SphereMesh_head"]
 material = SubResource("Material_head")
-radius = 0.28
-height = 0.56
-
-[sub_resource type="StandardMaterial3D" id="Material_mask"]
-albedo_color = Color(0.04, 0.04, 0.06, 1)
+radius = 0.3
+height = 0.6
+radial_segments = 8
+rings = 4
 
 [sub_resource type="BoxMesh" id="BoxMesh_mask"]
 material = SubResource("Material_mask")
-size = Vector3(0.5, 0.16, 0.08)
+size = Vector3(0.56, 0.18, 0.075)
+
+[sub_resource type="BoxMesh" id="BoxMesh_leg"]
+material = SubResource("Material_limb")
+size = Vector3(0.13, 0.68, 0.13)
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_antenna"]
+material = SubResource("Material_limb")
+radius = 0.055
+height = 0.68
+radial_segments = 6
+rings = 2
+
+[sub_resource type="BoxMesh" id="BoxMesh_seam"]
+material = SubResource("Material_mask")
+size = Vector3(0.035, 0.045, 0.74)
+
+[sub_resource type="BoxMesh" id="BoxMesh_eye"]
+material = SubResource("Material_eye")
+size = Vector3(0.105, 0.055, 0.026)
 
 [node name="Player" type="CharacterBody3D"]
 script = ExtResource("1_player")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-position = Vector3(0, 0.9, 0)
+position = Vector3(0, 0.575, 0)
 shape = SubResource("CapsuleShape_player")
 
-[node name="Body" type="MeshInstance3D" parent="."]
-position = Vector3(0, 0.82, 0)
-mesh = SubResource("CapsuleMesh_body")
+[node name="Body" type="Node3D" parent="."]
 
-[node name="Head" type="MeshInstance3D" parent="."]
-position = Vector3(0, 1.62, 0)
+[node name="Abdomen" type="MeshInstance3D" parent="Body"]
+position = Vector3(0, 0.62, 0.3)
+scale = Vector3(0.78, 0.62, 1.08)
+mesh = SubResource("SphereMesh_abdomen")
+
+[node name="Thorax" type="MeshInstance3D" parent="Body"]
+position = Vector3(0, 0.58, -0.42)
+scale = Vector3(0.92, 0.82, 0.88)
+mesh = SubResource("SphereMesh_thorax")
+
+[node name="Head" type="MeshInstance3D" parent="Body"]
+position = Vector3(0, 0.61, -0.85)
+scale = Vector3(0.92, 0.78, 0.88)
 mesh = SubResource("SphereMesh_head")
 
-[node name="Mask" type="MeshInstance3D" parent="."]
-position = Vector3(0, 1.67, -0.255)
+[node name="Mask" type="MeshInstance3D" parent="Body"]
+position = Vector3(0, 0.64, -1.118)
+rotation = Vector3(-0.12, 0, 0)
 mesh = SubResource("BoxMesh_mask")
 
+[node name="AntennaLeft" type="MeshInstance3D" parent="Body"]
+position = Vector3(-0.17, 0.82, -1.02)
+rotation = Vector3(-0.94, 0, 0.18)
+mesh = SubResource("CapsuleMesh_antenna")
+
+[node name="AntennaRight" type="MeshInstance3D" parent="Body"]
+position = Vector3(0.17, 0.82, -1.02)
+rotation = Vector3(-0.94, 0, -0.18)
+mesh = SubResource("CapsuleMesh_antenna")
+
+[node name="LegLeftFront" type="MeshInstance3D" parent="Body"]
+position = Vector3(-0.43, 0.35, -0.52)
+rotation = Vector3(-0.35, 0, 0.98)
+mesh = SubResource("BoxMesh_leg")
+
+[node name="LegLeftMiddle" type="MeshInstance3D" parent="Body"]
+position = Vector3(-0.48, 0.32, -0.05)
+rotation = Vector3(0, 0, 1.08)
+mesh = SubResource("BoxMesh_leg")
+
+[node name="LegLeftRear" type="MeshInstance3D" parent="Body"]
+position = Vector3(-0.44, 0.34, 0.43)
+rotation = Vector3(0.35, 0, 0.98)
+mesh = SubResource("BoxMesh_leg")
+
+[node name="LegRightFront" type="MeshInstance3D" parent="Body"]
+position = Vector3(0.43, 0.35, -0.52)
+rotation = Vector3(-0.35, 0, -0.98)
+mesh = SubResource("BoxMesh_leg")
+
+[node name="LegRightMiddle" type="MeshInstance3D" parent="Body"]
+position = Vector3(0.48, 0.32, -0.05)
+rotation = Vector3(0, 0, -1.08)
+mesh = SubResource("BoxMesh_leg")
+
+[node name="LegRightRear" type="MeshInstance3D" parent="Body"]
+position = Vector3(0.44, 0.34, 0.43)
+rotation = Vector3(0.35, 0, -0.98)
+mesh = SubResource("BoxMesh_leg")
+
+[node name="ShellSeam" type="MeshInstance3D" parent="Body"]
+position = Vector3(0, 0.945, 0.34)
+mesh = SubResource("BoxMesh_seam")
+
+[node name="EyeLeft" type="MeshInstance3D" parent="Body"]
+position = Vector3(-0.145, 0.65, -1.16)
+rotation = Vector3(-0.12, 0, 0)
+mesh = SubResource("BoxMesh_eye")
+
+[node name="EyeRight" type="MeshInstance3D" parent="Body"]
+position = Vector3(0.145, 0.65, -1.16)
+rotation = Vector3(-0.12, 0, 0)
+mesh = SubResource("BoxMesh_eye")
+
 [node name="CameraPivot" type="Node3D" parent="."]
-position = Vector3(0, 1.35, 0)
+position = Vector3(0, 1.15, 0)
 
 [node name="SpringArm3D" type="SpringArm3D" parent="CameraPivot"]
 spring_length = 4.2
