@@ -5,21 +5,90 @@ signal collected(toilet: TurdToilet)
 
 var has_turd := true
 var turd_visual: Node3D
+var targeted := false
+var pickup_feedback_active := false
+var pickup_duration := 0.24
+
+var _target_tween: Tween
+var _pickup_tween: Tween
+var _neutral_turd_position := Vector3.ZERO
+var _neutral_turd_scale := Vector3.ONE
 
 
 func _ready() -> void:
 	add_to_group("toilets")
 	_build_toilet()
+	_neutral_turd_position = turd_visual.position
+	_neutral_turd_scale = turd_visual.scale
 	turd_visual.visible = has_turd
+
+
+func _exit_tree() -> void:
+	_kill_tween(_target_tween)
+	_kill_tween(_pickup_tween)
+
+
+func set_targeted(value: bool) -> void:
+	var next_targeted := value and has_turd and not pickup_feedback_active
+	if targeted == next_targeted:
+		return
+	targeted = next_targeted
+	_kill_tween(_target_tween)
+	if pickup_feedback_active or turd_visual == null:
+		return
+	_target_tween = create_tween()
+	_target_tween.set_parallel(true)
+	if targeted:
+		_target_tween.set_loops()
+		_target_tween.tween_property(turd_visual, "position", _neutral_turd_position + Vector3(0.0, 0.10, 0.0), 0.18).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+		_target_tween.tween_property(turd_visual, "scale", _neutral_turd_scale * 1.12, 0.18).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+		_target_tween.chain().tween_property(turd_visual, "position", _neutral_turd_position + Vector3(0.0, 0.15, 0.0), 0.34).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+		_target_tween.parallel().tween_property(turd_visual, "scale", _neutral_turd_scale * 1.18, 0.34).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+		_target_tween.chain().tween_property(turd_visual, "position", _neutral_turd_position + Vector3(0.0, 0.10, 0.0), 0.34).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+		_target_tween.parallel().tween_property(turd_visual, "scale", _neutral_turd_scale * 1.12, 0.34).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	else:
+		_target_tween.tween_property(turd_visual, "position", _neutral_turd_position, 0.12).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+		_target_tween.tween_property(turd_visual, "scale", _neutral_turd_scale, 0.12).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
 
 func collect() -> bool:
 	if not has_turd:
 		return false
 	has_turd = false
-	turd_visual.visible = false
+	targeted = false
+	_kill_tween(_target_tween)
+	_start_pickup_feedback()
 	collected.emit(self)
 	return true
+
+
+func _start_pickup_feedback() -> void:
+	_kill_tween(_pickup_tween)
+	pickup_feedback_active = true
+	turd_visual.visible = true
+	var start_position := turd_visual.position
+	var start_scale := turd_visual.scale
+	_pickup_tween = create_tween()
+	_pickup_tween.set_parallel(true)
+	_pickup_tween.tween_property(turd_visual, "position", start_position + Vector3(0.0, 0.30, 0.0), 0.08).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_pickup_tween.tween_property(turd_visual, "scale", start_scale * 1.30, 0.08).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_pickup_tween.chain().tween_property(turd_visual, "position", start_position + Vector3(0.0, 0.52, 0.0), pickup_duration - 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	_pickup_tween.parallel().tween_property(turd_visual, "scale", Vector3.ZERO, pickup_duration - 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	_pickup_tween.chain().tween_callback(_finish_pickup_feedback)
+
+
+func _finish_pickup_feedback() -> void:
+	pickup_feedback_active = false
+	if turd_visual == null:
+		return
+	turd_visual.visible = false
+	turd_visual.position = _neutral_turd_position
+	turd_visual.scale = _neutral_turd_scale
+
+
+func _kill_tween(tween: Tween) -> void:
+	if tween != null and tween.is_valid():
+		tween.kill()
 
 
 func _build_toilet() -> void:
