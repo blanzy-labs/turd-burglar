@@ -196,6 +196,11 @@ func apply_mouse_look(relative_motion: Vector2) -> void:
 	camera_pivot.rotation = Vector3(camera_pitch, camera_yaw, 0.0)
 
 
+func reset_to_position(safe_position: Vector3) -> void:
+	global_position = safe_position
+	velocity = Vector3.ZERO
+
+
 func _automation_requested() -> bool:
 	for argument in OS.get_cmdline_user_args():
 		if argument.begins_with("--self-test") or argument.begins_with("--screenshot") or argument == "--export-self-test":

@@ -1,0 +1,66 @@
+{
+  "id": "restroom_005",
+  "name": "Hazardous Materials",
+  "objective": {"turds_required": 8},
+  "player_spawn": [0.0, 0.05, 19.0],
+  "exit": {"position": [0.0, 0.0, -19.0]},
+  "toilets": [
+    {"id": "intake_left", "position": [-5.0, 0.0, 17.0], "rotation_degrees": [0.0, 90.0, 0.0], "has_turd": true},
+    {"id": "intake_right", "position": [5.0, 0.0, 14.0], "rotation_degrees": [0.0, -90.0, 0.0], "has_turd": true},
+    {"id": "intake_decoy", "position": [-5.2, 0.0, 11.0], "rotation_degrees": [0.0, 90.0, 0.0], "has_turd": false},
+    {"id": "processing_left", "position": [-5.0, 0.0, 5.0], "rotation_degrees": [0.0, 90.0, 0.0], "has_turd": true},
+    {"id": "processing_right", "position": [5.0, 0.0, 2.0], "rotation_degrees": [0.0, -90.0, 0.0], "has_turd": true},
+    {"id": "processing_reactor", "position": [-5.0, 0.0, -1.5], "rotation_degrees": [0.0, 90.0, 0.0], "has_turd": true},
+    {"id": "processing_decoy", "position": [5.2, 0.0, 6.8], "rotation_degrees": [0.0, -90.0, 0.0], "has_turd": false},
+    {"id": "containment_left", "position": [-5.0, 0.0, -9.0], "rotation_degrees": [0.0, 90.0, 0.0], "has_turd": true},
+    {"id": "containment_right", "position": [5.0, 0.0, -13.0], "rotation_degrees": [0.0, -90.0, 0.0], "has_turd": true},
+    {"id": "containment_throne", "position": [0.0, 0.0, -17.0], "rotation_degrees": [0.0, 180.0, 0.0], "has_turd": true},
+    {"id": "containment_decoy", "position": [-5.2, 0.0, -15.5], "rotation_degrees": [0.0, 90.0, 0.0], "has_turd": false}
+  ],
+  "doors": [
+    {"id": "decon_door", "position": [0.0, 1.5, 8.0], "size": [4.0, 3.0, 0.5], "color": "ff5c89", "open_offset": [0.0, 3.8, 0.0], "open_duration": 0.5},
+    {"id": "containment_door", "position": [0.0, 1.5, -5.0], "size": [4.0, 3.0, 0.5], "color": "46dcff", "open_offset": [0.0, 3.8, 0.0], "open_duration": 0.5}
+  ],
+  "triggers": [
+    {"id": "open_decon", "type": "collect_count", "threshold": 2, "action": {"type": "open_door", "door_id": "decon_door"}},
+    {"id": "open_containment", "type": "collect_count", "threshold": 5, "action": {"type": "open_door", "door_id": "containment_door"}}
+  ],
+  "hazards": [
+    {"id": "sludge_intake", "type": "reset_zone", "position": [0.0, 0.15, 13.0], "size": [4.8, 0.5, 2.4], "color": "a8ff2f", "reset_position": [0.0, 0.05, 16.5]},
+    {"id": "decon_overflow", "type": "reset_zone", "position": [2.5, 0.15, 0.0], "size": [5.0, 0.5, 2.6], "color": "ff5ad9", "reset_position": [-2.8, 0.05, 3.2], "cooldown": 0.8},
+    {"id": "vault_leak", "type": "reset_zone", "position": [-2.5, 0.15, -11.0], "size": [5.0, 0.5, 2.5], "color": "ffb52e", "reset_position": [2.8, 0.05, -8.0], "cooldown": 0.9}
+  ],
+  "geometry": [
+    {"type": "box", "name": "IntakeFloor", "size": [16.0, 0.4, 14.0], "position": [0.0, -0.2, 15.0], "color": "59406f", "collision": true},
+    {"type": "box", "name": "ProcessingFloor", "size": [16.0, 0.4, 13.0], "position": [0.0, -0.2, 1.5], "color": "236b69", "collision": true},
+    {"type": "box", "name": "ContainmentFloor", "size": [16.0, 0.4, 15.0], "position": [0.0, -0.2, -12.5], "color": "84601f", "collision": true},
+    {"type": "box", "name": "NorthWall", "size": [16.0, 4.0, 0.5], "position": [0.0, 2.0, 22.0], "color": "21132d", "collision": true},
+    {"type": "box", "name": "SouthWall", "size": [16.0, 4.0, 0.5], "position": [0.0, 2.0, -20.0], "color": "21132d", "collision": true},
+    {"type": "box", "name": "WestWall", "size": [0.5, 4.0, 42.0], "position": [-8.0, 2.0, 1.0], "color": "2b1d3b", "collision": true},
+    {"type": "box", "name": "EastWall", "size": [0.5, 4.0, 42.0], "position": [8.0, 2.0, 1.0], "color": "2b1d3b", "collision": true},
+    {"type": "box", "name": "DeconLeft", "size": [6.0, 4.0, 0.5], "position": [-5.0, 2.0, 8.0], "color": "9b315b", "collision": true},
+    {"type": "box", "name": "DeconRight", "size": [6.0, 4.0, 0.5], "position": [5.0, 2.0, 8.0], "color": "9b315b", "collision": true},
+    {"type": "box", "name": "DeconHeader", "size": [4.0, 1.0, 0.5], "position": [0.0, 3.5, 8.0], "color": "ffabc5", "collision": false},
+    {"type": "box", "name": "ContainmentLeft", "size": [6.0, 4.0, 0.5], "position": [-5.0, 2.0, -5.0], "color": "16788e", "collision": true},
+    {"type": "box", "name": "ContainmentRight", "size": [6.0, 4.0, 0.5], "position": [5.0, 2.0, -5.0], "color": "16788e", "collision": true},
+    {"type": "box", "name": "ContainmentHeader", "size": [4.0, 1.0, 0.5], "position": [0.0, 3.5, -5.0], "color": "9becff", "collision": false},
+    {"type": "box", "name": "IntakeWarning", "size": [0.25, 0.08, 10.0], "position": [0.0, 0.04, 15.0], "color": "b9ff44", "collision": false},
+    {"type": "box", "name": "ProcessingWarning", "size": [0.25, 0.08, 9.0], "position": [0.0, 0.04, 1.5], "color": "ff65d7", "collision": false},
+    {"type": "box", "name": "ContainmentWarning", "size": [0.25, 0.08, 11.0], "position": [0.0, 0.04, -12.5], "color": "ffbd3e", "collision": false}
+  ],
+  "labels": [
+    {"name": "Title", "text": "HAZARDOUS MATERIALS", "position": [0.0, 3.25, 21.7], "rotation_degrees": [0.0, 180.0, 0.0], "color": "d7ff71"},
+    {"name": "IntakeLabel", "text": "AREA 1: SLUDGE INTAKE", "position": [0.0, 3.1, 18.5], "rotation_degrees": [0.0, 180.0, 0.0], "color": "c5ff6c"},
+    {"name": "DeconLabel", "text": "DECON / 2 TURDS", "position": [0.0, 3.55, 8.28], "rotation_degrees": [0.0, 180.0, 0.0], "color": "ffffff"},
+    {"name": "ProcessingLabel", "text": "AREA 2: BAD SCIENCE", "position": [0.0, 3.1, 7.7], "color": "ff8ee3"},
+    {"name": "ContainmentGateLabel", "text": "CONTAINMENT / 5 TURDS", "position": [0.0, 3.55, -4.72], "rotation_degrees": [0.0, 180.0, 0.0], "color": "ffffff"},
+    {"name": "VaultLabel", "text": "AREA 3: REGRETTABLE VAULT", "position": [0.0, 3.1, -19.7], "color": "ffd76b"}
+  ],
+  "lights": [
+    {"type": "directional", "name": "FacilityLight", "rotation_degrees": [-55.0, -20.0, 0.0], "energy": 0.8, "color": "e9e1ff", "shadow": true},
+    {"type": "omni", "name": "IntakeLight", "position": [0.0, 3.0, 15.0], "range": 12.0, "energy": 4.0, "color": "b7ff41"},
+    {"type": "omni", "name": "ProcessingLight", "position": [0.0, 3.0, 1.5], "range": 12.0, "energy": 4.0, "color": "ff4bd0"},
+    {"type": "omni", "name": "ContainmentLight", "position": [0.0, 3.0, -12.5], "range": 13.0, "energy": 4.2, "color": "ffb72e"}
+  ],
+  "environment": {"background_color": "110b1d", "ambient_color": "bdaed8", "ambient_energy": 0.48}
+}

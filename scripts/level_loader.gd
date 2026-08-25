@@ -143,6 +143,17 @@ static func validate_level(raw: Dictionary, level_label: String = "inline", expe
 				return result
 			triggers.append(result.value)
 
+	var hazards: Array[Dictionary] = []
+	var hazard_ids := {}
+	if raw.has("hazards"):
+		if typeof(raw.hazards) != TYPE_ARRAY:
+			return _failure(level_label, "hazards", "must be an array")
+		for index in raw.hazards.size():
+			var result := _normalize_hazard(raw.hazards[index], index, level_label, hazard_ids)
+			if not result.ok:
+				return result
+			hazards.append(result.value)
+
 	if not raw.has("geometry") or typeof(raw.geometry) != TYPE_ARRAY or raw.geometry.is_empty():
 		return _failure(level_label, "geometry", "must be a non-empty array")
 	var geometry: Array[Dictionary] = []
@@ -195,9 +206,56 @@ static func validate_level(raw: Dictionary, level_label: String = "inline", expe
 			"labels": labels,
 			"doors": doors,
 			"triggers": triggers,
+			"hazards": hazards,
 			"collectible_turd_count": collectible_count,
 		},
 	}
+
+
+static func _normalize_hazard(value, index: int, level_label: String, ids: Dictionary) -> Dictionary:
+	var field := "hazards[%d]" % index
+	if typeof(value) != TYPE_DICTIONARY:
+		return _failure(level_label, field, "must be an object")
+	var hazard: Dictionary = value
+	var id_result := _required_string(hazard, "id", level_label, "%s.id" % field)
+	if not id_result.ok:
+		return id_result
+	var hazard_id: String = id_result.value
+	if ids.has(hazard_id):
+		return _failure(level_label, "%s.id" % field, "duplicate hazard id: %s" % hazard_id)
+	ids[hazard_id] = true
+	if not hazard.has("type") or typeof(hazard.type) != TYPE_STRING or hazard.type != "reset_zone":
+		return _failure(level_label, "%s.type" % field, "unsupported hazard type; expected reset_zone")
+	var position_result := _required_vector(hazard, "position", level_label, "%s.position" % field)
+	if not position_result.ok:
+		return position_result
+	var size_result := _required_vector(hazard, "size", level_label, "%s.size" % field)
+	if not size_result.ok:
+		return size_result
+	var size: Vector3 = size_result.value
+	if size.x <= 0.0 or size.y <= 0.0 or size.z <= 0.0:
+		return _failure(level_label, "%s.size" % field, "components must be greater than zero")
+	var reset_result := _required_vector(hazard, "reset_position", level_label, "%s.reset_position" % field)
+	if not reset_result.ok:
+		return reset_result
+	var color := Color("ff5b45")
+	if hazard.has("color"):
+		var color_result := _required_color(hazard, "color", level_label, "%s.color" % field)
+		if not color_result.ok:
+			return color_result
+		color = color_result.value
+	var cooldown_value = hazard.get("cooldown", 0.75)
+	if not _is_number(cooldown_value) or not is_finite(float(cooldown_value)) or float(cooldown_value) <= 0.0:
+		return _failure(level_label, "%s.cooldown" % field, "must be a finite number greater than zero")
+	return {"ok": true, "value": {
+		"id": hazard_id,
+		"type": "reset_zone",
+		"position": position_result.value,
+		"size": size,
+		"reset_position": reset_result.value,
+		"color": color,
+		"cooldown": float(cooldown_value),
+	}}
 
 
 static func _normalize_door(value, index: int, level_label: String, ids: Dictionary) -> Dictionary:

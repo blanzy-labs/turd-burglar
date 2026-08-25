@@ -7,6 +7,7 @@ const PLAYER_SCENE := preload("res://scenes/player.tscn")
 const TOILET_SCENE := preload("res://scenes/toilet.tscn")
 const EXIT_SCENE := preload("res://scenes/exit.tscn")
 const DOOR_SCENE := preload("res://scenes/door.tscn")
+const HAZARD_SCENE := preload("res://scenes/hazard.tscn")
 
 @export_file("*.json") var level_path_override := ""
 
@@ -24,6 +25,7 @@ var heist_exit: HeistExit
 var doors_by_id := {}
 var trigger_fired := {}
 var trigger_fire_count := {}
+var hazards_by_id := {}
 var collection_feedback_count := 0
 var counter_punch_count := 0
 var exit_unlock_feedback_count := 0
@@ -155,10 +157,25 @@ func _spawn_gameplay() -> void:
 	player.position = level_definition.player_spawn
 	add_child(player)
 
+	for hazard_data: Dictionary in level_definition.hazards:
+		var hazard: ResetZoneHazard = HAZARD_SCENE.instantiate()
+		hazard.configure(hazard_data, player)
+		hazard.activated.connect(_on_hazard_activated)
+		add_child(hazard)
+		hazards_by_id[hazard_data.id] = hazard
+		print("TBR07_HAZARD_REGISTERED=%s" % hazard_data.id)
+
 	heist_exit = EXIT_SCENE.instantiate()
 	heist_exit.name = "Exit"
 	heist_exit.position = level_definition.exit.position
 	add_child(heist_exit)
+
+
+func _on_hazard_activated(hazard: ResetZoneHazard, body: BurglarPlayer) -> void:
+	if body != player or hazard.hazard_type != "reset_zone":
+		return
+	player.reset_to_position(hazard.reset_position)
+	print("TBR07_PLAYER_RESET=%s position=%s" % [hazard.hazard_id, hazard.reset_position])
 
 
 func _build_environment() -> void:
