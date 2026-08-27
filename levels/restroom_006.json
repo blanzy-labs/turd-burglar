@@ -1,0 +1,61 @@
+{
+  "id": "restroom_006",
+  "name": "Special Delivery",
+  "objective": {"turds_required": 9},
+  "player_spawn": [0.0, 0.05, 18.5],
+  "exit": {"position": [0.0, 0.0, -18.5]},
+  "toilets": [
+    {"id": "lobby_normal", "position": [-5.0, 0.0, 16.0], "rotation_degrees": [0.0, 90.0, 0.0], "has_turd": true},
+    {"id": "lobby_turbo", "position": [5.0, 0.0, 13.0], "rotation_degrees": [0.0, -90.0, 0.0], "has_turd": true, "turd_type": "turbo", "effect_duration": 8.0, "effect_value": 1.5},
+    {"id": "lobby_empty", "position": [-5.0, 0.0, 10.5], "rotation_degrees": [0.0, 90.0, 0.0], "has_turd": false},
+    {"id": "middle_normal_left", "position": [-5.0, 0.0, 5.0], "rotation_degrees": [0.0, 90.0, 0.0], "has_turd": true},
+    {"id": "middle_normal_right", "position": [5.0, 0.0, 2.0], "rotation_degrees": [0.0, -90.0, 0.0], "has_turd": true},
+    {"id": "middle_ghost", "position": [-5.0, 0.0, -1.0], "rotation_degrees": [0.0, 90.0, 0.0], "has_turd": true, "turd_type": "ghost", "effect_duration": 8.0},
+    {"id": "middle_empty", "position": [5.0, 0.0, -3.0], "rotation_degrees": [0.0, -90.0, 0.0], "has_turd": false},
+    {"id": "vault_normal_left", "position": [-5.0, 0.0, -8.5], "rotation_degrees": [0.0, 90.0, 0.0], "has_turd": true},
+    {"id": "vault_normal_right", "position": [5.0, 0.0, -11.5], "rotation_degrees": [0.0, -90.0, 0.0], "has_turd": true},
+    {"id": "vault_turbo", "position": [-5.0, 0.0, -15.0], "rotation_degrees": [0.0, 90.0, 0.0], "has_turd": true, "turd_type": "turbo", "effect_duration": 8.0, "effect_value": 1.5},
+    {"id": "vault_ghost", "position": [3.8, 0.0, -16.8], "rotation_degrees": [0.0, -90.0, 0.0], "has_turd": true, "turd_type": "ghost", "effect_duration": 8.0}
+  ],
+  "doors": [
+    {"id": "power_door", "position": [0.0, 1.5, 8.0], "size": [4.0, 3.0, 0.5], "color": "ff8b32", "open_offset": [0.0, 3.8, 0.0], "open_duration": 0.5},
+    {"id": "vault_door", "position": [0.0, 1.5, -5.5], "size": [4.0, 3.0, 0.5], "color": "77dcff", "open_offset": [0.0, 3.8, 0.0], "open_duration": 0.5}
+  ],
+  "triggers": [
+    {"id": "open_power", "type": "collect_count", "threshold": 2, "action": {"type": "open_door", "door_id": "power_door"}},
+    {"id": "open_vault", "type": "collect_count", "threshold": 6, "action": {"type": "open_door", "door_id": "vault_door"}}
+  ],
+  "hazards": [
+    {"id": "turbo_channel", "type": "reset_zone", "position": [2.5, 0.15, 11.0], "size": [5.0, 0.5, 2.4], "color": "ff6a24", "reset_position": [-2.8, 0.05, 14.0], "cooldown": 0.65},
+    {"id": "ghost_channel", "type": "reset_zone", "position": [-2.5, 0.15, -9.5], "size": [5.0, 0.5, 2.5], "color": "65dfff", "reset_position": [2.8, 0.05, -7.0], "cooldown": 0.7}
+  ],
+  "geometry": [
+    {"type": "box", "name": "LobbyFloor", "size": [16.0, 0.4, 14.0], "position": [0.0, -0.2, 14.5], "color": "54314f", "collision": true},
+    {"type": "box", "name": "MiddleFloor", "size": [16.0, 0.4, 13.5], "position": [0.0, -0.2, 1.0], "color": "315c64", "collision": true},
+    {"type": "box", "name": "VaultFloor", "size": [16.0, 0.4, 14.5], "position": [0.0, -0.2, -12.5], "color": "57496f", "collision": true},
+    {"type": "box", "name": "NorthWall", "size": [16.0, 4.0, 0.5], "position": [0.0, 2.0, 21.5], "color": "1c1428", "collision": true},
+    {"type": "box", "name": "SouthWall", "size": [16.0, 4.0, 0.5], "position": [0.0, 2.0, -20.0], "color": "1c1428", "collision": true},
+    {"type": "box", "name": "WestWall", "size": [0.5, 4.0, 41.5], "position": [-8.0, 2.0, 0.75], "color": "241b35", "collision": true},
+    {"type": "box", "name": "EastWall", "size": [0.5, 4.0, 41.5], "position": [8.0, 2.0, 0.75], "color": "241b35", "collision": true},
+    {"type": "box", "name": "PowerLeft", "size": [6.0, 4.0, 0.5], "position": [-5.0, 2.0, 8.0], "color": "8e4929", "collision": true},
+    {"type": "box", "name": "PowerRight", "size": [6.0, 4.0, 0.5], "position": [5.0, 2.0, 8.0], "color": "8e4929", "collision": true},
+    {"type": "box", "name": "PowerHeader", "size": [4.0, 1.0, 0.5], "position": [0.0, 3.5, 8.0], "color": "ffc08c", "collision": false},
+    {"type": "box", "name": "VaultLeft", "size": [6.0, 4.0, 0.5], "position": [-5.0, 2.0, -5.5], "color": "286b82", "collision": true},
+    {"type": "box", "name": "VaultRight", "size": [6.0, 4.0, 0.5], "position": [5.0, 2.0, -5.5], "color": "286b82", "collision": true},
+    {"type": "box", "name": "VaultHeader", "size": [4.0, 1.0, 0.5], "position": [0.0, 3.5, -5.5], "color": "a5ecff", "collision": false},
+    {"type": "box", "name": "LobbySafeRoute", "size": [0.25, 0.08, 10.0], "position": [-3.8, 0.04, 14.0], "color": "ffd36b", "collision": false},
+    {"type": "box", "name": "VaultSafeRoute", "size": [0.25, 0.08, 10.0], "position": [3.8, 0.04, -12.0], "color": "a9f4ff", "collision": false}
+  ],
+  "labels": [
+    {"name": "Title", "text": "SPECIAL DELIVERY", "position": [0.0, 3.25, 21.2], "rotation_degrees": [0.0, 180.0, 0.0], "color": "fff07a"},
+    {"name": "PowerLabel", "text": "POWER DOOR / 2 TURDS", "position": [0.0, 3.55, 8.28], "rotation_degrees": [0.0, 180.0, 0.0], "color": "ffffff"},
+    {"name": "RouteLabel", "text": "SPECIALS OPTIONAL — SAFE ROUTE OPEN", "position": [0.0, 3.0, 4.8], "color": "c8fbff"},
+    {"name": "VaultLabel", "text": "GHOST VAULT / 6 TURDS", "position": [0.0, 3.55, -5.22], "rotation_degrees": [0.0, 180.0, 0.0], "color": "ffffff"}
+  ],
+  "lights": [
+    {"type": "directional", "name": "FacilityLight", "rotation_degrees": [-55.0, -20.0, 0.0], "energy": 0.8, "color": "e9e1ff", "shadow": true},
+    {"type": "omni", "name": "TurboLight", "position": [0.0, 3.0, 13.5], "range": 12.0, "energy": 4.0, "color": "ff7438"},
+    {"type": "omni", "name": "GhostLight", "position": [0.0, 3.0, -11.5], "range": 13.0, "energy": 4.0, "color": "77e5ff"}
+  ],
+  "environment": {"background_color": "100b1b", "ambient_color": "bdaed8", "ambient_energy": 0.48}
+}
