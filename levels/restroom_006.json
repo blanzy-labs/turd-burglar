@@ -1,0 +1,54 @@
+{
+  "id": "restroom_006",
+  "name": "Paranormal Potty",
+  "objective": {"turds_required": 9},
+  "player_spawn": [0.0, 0.05, 19.0],
+  "exit": {"position": [0.0, 0.0, -19.0]},
+  "toilets": [
+    {"id": "lobby_normal", "position": [-5.0, 0.0, 17.0], "rotation_degrees": [0.0, 90.0, 0.0], "has_turd": true},
+    {"id": "lobby_turbo", "position": [5.0, 0.0, 14.0], "rotation_degrees": [0.0, -90.0, 0.0], "has_turd": true, "turd_type": "turbo", "effect_duration": 6.0, "effect_value": 1.5},
+    {"id": "lobby_empty", "position": [-5.0, 0.0, 11.0], "rotation_degrees": [0.0, 90.0, 0.0], "has_turd": false},
+    {"id": "lab_normal_a", "position": [-5.0, 0.0, 5.0], "rotation_degrees": [0.0, 90.0, 0.0], "has_turd": true},
+    {"id": "lab_ghost", "position": [5.0, 0.0, 3.0], "rotation_degrees": [0.0, -90.0, 0.0], "has_turd": true, "turd_type": "ghost", "effect_duration": 6.0},
+    {"id": "lab_normal_b", "position": [-5.0, 0.0, -1.0], "rotation_degrees": [0.0, 90.0, 0.0], "has_turd": true},
+    {"id": "lab_empty", "position": [5.0, 0.0, -2.0], "rotation_degrees": [0.0, -90.0, 0.0], "has_turd": false},
+    {"id": "vault_normal_a", "position": [-5.0, 0.0, -9.0], "rotation_degrees": [0.0, 90.0, 0.0], "has_turd": true},
+    {"id": "vault_turbo", "position": [5.0, 0.0, -11.5], "rotation_degrees": [0.0, -90.0, 0.0], "has_turd": true, "turd_type": "turbo", "effect_duration": 6.0, "effect_value": 1.5},
+    {"id": "vault_normal_b", "position": [-5.0, 0.0, -14.0], "rotation_degrees": [0.0, 90.0, 0.0], "has_turd": true},
+    {"id": "vault_ghost", "position": [3.0, 0.0, -17.0], "rotation_degrees": [0.0, -90.0, 0.0], "has_turd": true, "turd_type": "ghost", "effect_duration": 6.0}
+  ],
+  "doors": [
+    {"id": "lab_door", "position": [0.0, 1.5, 8.0], "size": [4.0, 3.0, 0.5], "color": "ff693d", "open_offset": [0.0, 3.8, 0.0], "open_duration": 0.5},
+    {"id": "vault_door", "position": [0.0, 1.5, -5.0], "size": [4.0, 3.0, 0.5], "color": "73e9ff", "open_offset": [0.0, 3.8, 0.0], "open_duration": 0.5}
+  ],
+  "triggers": [
+    {"id": "open_lab", "type": "collect_count", "threshold": 2, "action": {"type": "open_door", "door_id": "lab_door"}},
+    {"id": "open_vault", "type": "collect_count", "threshold": 5, "action": {"type": "open_door", "door_id": "vault_door"}}
+  ],
+  "hazards": [
+    {"id": "hot_streak", "type": "reset_zone", "position": [0.0, 0.15, 12.0], "size": [5.0, 0.5, 2.4], "color": "ff5a24", "reset_position": [0.0, 0.05, 16.0], "cooldown": 0.75},
+    {"id": "ectoplasm", "type": "reset_zone", "position": [2.5, 0.15, 0.0], "size": [5.0, 0.5, 2.5], "color": "72e8ff", "reset_position": [-2.8, 0.05, 3.5], "cooldown": 0.8}
+  ],
+  "geometry": [
+    {"type": "box", "name": "Floor", "size": [16.0, 0.4, 42.0], "position": [0.0, -0.2, 1.0], "color": "403052", "collision": true},
+    {"type": "box", "name": "NorthWall", "size": [16.0, 4.0, 0.5], "position": [0.0, 2.0, 22.0], "color": "21142d", "collision": true},
+    {"type": "box", "name": "SouthWall", "size": [16.0, 4.0, 0.5], "position": [0.0, 2.0, -20.0], "color": "21142d", "collision": true},
+    {"type": "box", "name": "WestWall", "size": [0.5, 4.0, 42.0], "position": [-8.0, 2.0, 1.0], "color": "291b38", "collision": true},
+    {"type": "box", "name": "EastWall", "size": [0.5, 4.0, 42.0], "position": [8.0, 2.0, 1.0], "color": "291b38", "collision": true},
+    {"type": "box", "name": "LabLeft", "size": [6.0, 4.0, 0.5], "position": [-5.0, 2.0, 8.0], "color": "713427", "collision": true},
+    {"type": "box", "name": "LabRight", "size": [6.0, 4.0, 0.5], "position": [5.0, 2.0, 8.0], "color": "713427", "collision": true},
+    {"type": "box", "name": "VaultLeft", "size": [6.0, 4.0, 0.5], "position": [-5.0, 2.0, -5.0], "color": "255a6b", "collision": true},
+    {"type": "box", "name": "VaultRight", "size": [6.0, 4.0, 0.5], "position": [5.0, 2.0, -5.0], "color": "255a6b", "collision": true}
+  ],
+  "labels": [
+    {"name": "Title", "text": "PARANORMAL POTTY", "position": [0.0, 3.2, 21.7], "rotation_degrees": [0.0, 180.0, 0.0], "color": "ffffff"},
+    {"name": "LabGate", "text": "LAB / 2 TURDS", "position": [0.0, 3.5, 8.3], "rotation_degrees": [0.0, 180.0, 0.0], "color": "ffb18e"},
+    {"name": "VaultGate", "text": "VAULT / 5 TURDS", "position": [0.0, 3.5, -4.7], "rotation_degrees": [0.0, 180.0, 0.0], "color": "a8f4ff"}
+  ],
+  "lights": [
+    {"type": "directional", "name": "FacilityLight", "rotation_degrees": [-55.0, -20.0, 0.0], "energy": 0.85, "color": "eee6ff", "shadow": true},
+    {"type": "omni", "name": "HotLight", "position": [0.0, 3.0, 14.0], "range": 13.0, "energy": 4.0, "color": "ff6b32"},
+    {"type": "omni", "name": "GhostLight", "position": [0.0, 3.0, -8.0], "range": 15.0, "energy": 4.0, "color": "72e8ff"}
+  ],
+  "environment": {"background_color": "100a19", "ambient_color": "b6abd0", "ambient_energy": 0.5}
+}

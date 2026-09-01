@@ -3,6 +3,7 @@ extends RefCounted
 
 const DEFAULT_LEVEL_ID := "restroom_001"
 const LEVEL_DIRECTORY := "res://levels"
+const TURD_TYPES := ["normal", "turbo", "ghost"]
 
 
 static func selected_level_id(arguments: PackedStringArray) -> String:
@@ -108,12 +109,27 @@ static func validate_level(raw: Dictionary, level_label: String = "inline", expe
 			rotation = rotation_result.value
 		if toilet_data.has_turd:
 			collectible_count += 1
-		toilets.append({
+		var turd_type = toilet_data.get("turd_type", "normal")
+		if typeof(turd_type) != TYPE_STRING or turd_type not in TURD_TYPES:
+			return _failure(level_label, "%s.turd_type" % field, "must be normal, turbo, or ghost")
+		var normalized_toilet := {
 			"id": toilet_id,
 			"position": toilet_position.value,
 			"rotation_degrees": rotation,
 			"has_turd": toilet_data.has_turd,
-		})
+			"turd_type": turd_type,
+		}
+		if turd_type != "normal":
+			var duration = toilet_data.get("effect_duration")
+			if not _is_number(duration) or not is_finite(float(duration)) or float(duration) <= 0.0:
+				return _failure(level_label, "%s.effect_duration" % field, "must be a finite number greater than zero")
+			normalized_toilet.effect_duration = float(duration)
+		if turd_type == "turbo":
+			var effect_value = toilet_data.get("effect_value")
+			if not _is_number(effect_value) or not is_finite(float(effect_value)) or float(effect_value) <= 1.0:
+				return _failure(level_label, "%s.effect_value" % field, "must be a finite speed multiplier greater than one")
+			normalized_toilet.effect_value = float(effect_value)
+		toilets.append(normalized_toilet)
 	if collectible_count != required_turds:
 		return _failure(
 			level_label,

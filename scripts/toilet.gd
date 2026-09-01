@@ -4,6 +4,9 @@ extends Node3D
 signal collected(toilet: TurdToilet)
 
 var has_turd := true
+var turd_type := "normal"
+var effect_duration := 0.0
+var effect_value := 1.0
 var turd_visual: Node3D
 var targeted := false
 var pickup_feedback_active := false
@@ -113,11 +116,21 @@ func _build_toilet() -> void:
 	add_child(turd_visual)
 	var offsets := [Vector3(-0.13, 0.0, 0.0), Vector3(0.10, 0.10, 0.0), Vector3(0.0, 0.22, 0.0)]
 	var scales := [Vector3(0.36, 0.18, 0.24), Vector3(0.31, 0.17, 0.22), Vector3(0.20, 0.14, 0.18)]
+	var turd_color := Color("6d321c")
+	if turd_type == "turbo":
+		turd_color = Color("ff5a24")
+	elif turd_type == "ghost":
+		turd_color = Color("72e8ff")
 	for index in 3:
 		var lump := MeshInstance3D.new()
 		lump.name = "Lump%d" % (index + 1)
 		lump.mesh = _sphere_mesh(0.5, 1.0)
-		lump.mesh.material = _material(Color("6d321c"))
+		var material := _material(turd_color)
+		if turd_type != "normal":
+			material.emission_enabled = true
+			material.emission = turd_color
+			material.emission_energy_multiplier = 1.25
+		lump.mesh.material = material
 		lump.position = offsets[index]
 		lump.scale = scales[index]
 		turd_visual.add_child(lump)
