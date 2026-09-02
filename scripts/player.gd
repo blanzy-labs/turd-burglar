@@ -5,6 +5,8 @@ const MOVE_SPEED := 5.0
 const GRAVITY := 18.0
 const MOUSE_SENSITIVITY := 0.003
 const INTERACTION_RANGE := 2.65
+const TURBO := "turbo"
+const GHOST := "ghost"
 const GAIT_IDLE_SPEED := 0.08
 const GAIT_BLEND_SPEED := 4.5
 const GAIT_MIN_FREQUENCY := 2.2
@@ -28,6 +30,10 @@ var neutral_body_transform: Transform3D
 var neutral_part_transforms: Dictionary = {}
 var neutral_upper_transforms: Dictionary = {}
 var neutral_lower_transforms: Dictionary = {}
+var effect_remaining := {TURBO: 0.0, GHOST: 0.0}
+var effect_values := {TURBO: 1.0, GHOST: 1.0}
+var effect_start_count := {TURBO: 0, GHOST: 0}
+var effect_refresh_count := {TURBO: 0, GHOST: 0}
 
 
 func _ready() -> void:
@@ -44,8 +50,9 @@ func _physics_process(delta: float) -> void:
 	if game != null and game.is_playing():
 		var input_vector := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 		var direction := Vector3(input_vector.x, 0.0, input_vector.y).rotated(Vector3.UP, camera_yaw)
-		velocity.x = direction.x * MOVE_SPEED
-		velocity.z = direction.z * MOVE_SPEED
+		var move_speed := get_effective_move_speed()
+		velocity.x = direction.x * move_speed
+		velocity.z = direction.z * move_speed
 		if direction.length_squared() > 0.01:
 			$Body.rotation.y = lerp_angle($Body.rotation.y, camera_yaw, delta * 10.0)
 	else:
@@ -59,6 +66,37 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	_update_locomotion(delta)
 	_update_interaction_target()
+
+
+func _process(delta: float) -> void:
+	for effect_type in [TURBO, GHOST]:
+		if effect_remaining[effect_type] > 0.0:
+			effect_remaining[effect_type] = maxf(0.0, effect_remaining[effect_type] - delta)
+
+
+func apply_turd_effect(effect_type: String, duration: float, value: float = 1.0) -> void:
+	if effect_type not in [TURBO, GHOST] or not is_finite(duration) or duration <= 0.0:
+		return
+	if effect_remaining[effect_type] > 0.0:
+		effect_refresh_count[effect_type] += 1
+	else:
+		effect_start_count[effect_type] += 1
+	effect_remaining[effect_type] = duration
+	effect_values[effect_type] = value if effect_type == TURBO else 1.0
+	if game != null and game.has_method("_update_effect_hud"):
+		game.call("_update_effect_hud")
+
+
+func has_turd_effect(effect_type: String) -> bool:
+	return effect_remaining.get(effect_type, 0.0) > 0.0
+
+
+func get_turd_effect_remaining(effect_type: String) -> float:
+	return float(effect_remaining.get(effect_type, 0.0))
+
+
+func get_effective_move_speed() -> float:
+	return MOVE_SPEED * float(effect_values[TURBO]) if has_turd_effect(TURBO) else MOVE_SPEED
 
 
 func _capture_neutral_visual_transforms() -> void:

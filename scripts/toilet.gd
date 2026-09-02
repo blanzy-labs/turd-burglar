@@ -4,6 +4,9 @@ extends Node3D
 signal collected(toilet: TurdToilet)
 
 var has_turd := true
+var turd_type := "normal"
+var effect_duration := 0.0
+var effect_value := 1.0
 var turd_visual: Node3D
 var targeted := false
 var pickup_feedback_active := false
@@ -117,7 +120,7 @@ func _build_toilet() -> void:
 		var lump := MeshInstance3D.new()
 		lump.name = "Lump%d" % (index + 1)
 		lump.mesh = _sphere_mesh(0.5, 1.0)
-		lump.mesh.material = _material(Color("6d321c"))
+		lump.mesh.material = _turd_material()
 		lump.position = offsets[index]
 		lump.scale = scales[index]
 		turd_visual.add_child(lump)
@@ -160,4 +163,18 @@ func _material(color: Color) -> StandardMaterial3D:
 	var material := StandardMaterial3D.new()
 	material.albedo_color = color
 	material.roughness = 0.9
+	return material
+
+
+func _turd_material() -> StandardMaterial3D:
+	var color := Color("6d321c")
+	if turd_type == "turbo":
+		color = Color("ff6a24")
+	elif turd_type == "ghost":
+		color = Color("7de8ff")
+	var material := _material(color)
+	if turd_type != "normal":
+		material.emission_enabled = true
+		material.emission = color
+		material.emission_energy_multiplier = 1.35
 	return material

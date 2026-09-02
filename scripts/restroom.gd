@@ -29,6 +29,7 @@ var hazards_by_id := {}
 var collection_feedback_count := 0
 var counter_punch_count := 0
 var exit_unlock_feedback_count := 0
+var hazard_ghost_block_count := 0
 
 var counter_label: Label
 var plus_one_label: Label
@@ -36,6 +37,8 @@ var prompt_label: Label
 var status_label: Label
 var completion_panel: ColorRect
 var completion_text: Label
+var effect_panel: ColorRect
+var effect_label: Label
 var _plus_one_tween: Tween
 var _counter_punch_tween: Tween
 var _exit_unlock_tween: Tween
@@ -111,6 +114,8 @@ func _on_toilet_collected(_toilet: TurdToilet) -> void:
 		print("TB_EXIT_UNLOCKED")
 		if level_id == "restroom_001":
 			print("TB001_EXIT_UNLOCKED")
+	if _toilet.turd_type != "normal":
+		player.apply_turd_effect(_toilet.turd_type, _toilet.effect_duration, _toilet.effect_value)
 	_update_hud()
 	_start_collection_feedback()
 	if exit_unlocked:
@@ -148,6 +153,9 @@ func _spawn_gameplay() -> void:
 		toilet.position = toilet_data.position
 		toilet.rotation_degrees = toilet_data.rotation_degrees
 		toilet.has_turd = toilet_data.has_turd
+		toilet.turd_type = toilet_data.turd_type
+		toilet.effect_duration = float(toilet_data.get("effect_duration", 0.0))
+		toilet.effect_value = float(toilet_data.get("effect_value", 1.0))
 		toilet.collected.connect(_on_toilet_collected)
 		add_child(toilet)
 		toilets.append(toilet)
@@ -173,6 +181,10 @@ func _spawn_gameplay() -> void:
 
 func _on_hazard_activated(hazard: ResetZoneHazard, body: BurglarPlayer) -> void:
 	if body != player or hazard.hazard_type != "reset_zone":
+		return
+	if player.has_turd_effect("ghost"):
+		hazard_ghost_block_count += 1
+		print("TBR08_GHOST_BLOCKED_RESET=%s" % hazard.hazard_id)
 		return
 	player.reset_to_position(hazard.reset_position)
 	print("TBR07_PLAYER_RESET=%s position=%s" % [hazard.hazard_id, hazard.reset_position])
@@ -238,6 +250,20 @@ func _build_hud() -> void:
 	top_panel.size = Vector2(290.0, 62.0)
 	canvas.add_child(top_panel)
 
+	effect_panel = ColorRect.new()
+	effect_panel.color = Color(0.05, 0.04, 0.08, 0.88)
+	effect_panel.position = Vector2(18.0, 88.0)
+	effect_panel.size = Vector2(290.0, 76.0)
+	effect_panel.visible = false
+	canvas.add_child(effect_panel)
+
+	effect_label = Label.new()
+	effect_label.position = Vector2(14.0, 8.0)
+	effect_label.size = Vector2(262.0, 60.0)
+	effect_label.add_theme_font_size_override("font_size", 22)
+	effect_label.add_theme_color_override("font_color", Color("ffffff"))
+	effect_panel.add_child(effect_label)
+
 	counter_label = Label.new()
 	counter_label.position = Vector2(18.0, 10.0)
 	counter_label.add_theme_font_size_override("font_size", 30)
@@ -295,6 +321,22 @@ func _build_hud() -> void:
 	completion_text.add_theme_font_size_override("font_size", 40)
 	completion_text.add_theme_color_override("font_color", Color("fff07a"))
 	completion_panel.add_child(completion_text)
+
+
+func _process(_delta: float) -> void:
+	if player == null or effect_label == null:
+		return
+	_update_effect_hud()
+
+
+func _update_effect_hud() -> void:
+	var lines: Array[String] = []
+	if player.has_turd_effect("turbo"):
+		lines.append("HOT SHIT  %.1fs" % player.get_turd_effect_remaining("turbo"))
+	if player.has_turd_effect("ghost"):
+		lines.append("GHOST TURD  %.1fs" % player.get_turd_effect_remaining("ghost"))
+	effect_label.text = "\n".join(lines)
+	effect_panel.visible = not lines.is_empty()
 
 
 func _start_collection_feedback() -> void:
