@@ -160,7 +160,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	elif event is InputEventKey and event.pressed and not event.echo:
 		if event.physical_keycode == KEY_E and nearby_toilet != null and game.is_playing():
-			nearby_toilet.collect()
+			if nearby_toilet.collect():
+				nearby_toilet.set_targeted(false)
+				nearby_toilet = null
+				game.set_interaction_prompt(false)
 		elif event.physical_keycode == KEY_ESCAPE:
 			if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 				Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
@@ -169,14 +172,21 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _update_interaction_target() -> void:
-	nearby_toilet = null
+	var previous_toilet: Node = nearby_toilet
+	var next_toilet: Node = null
 	var nearest_distance := INTERACTION_RANGE
-	for toilet in get_tree().get_nodes_in_group("toilets"):
-		if toilet.has_turd:
-			var distance := global_position.distance_to(toilet.global_position)
-			if distance < nearest_distance:
-				nearest_distance = distance
-				nearby_toilet = toilet
+	if game != null and game.is_playing():
+		for toilet in get_tree().get_nodes_in_group("toilets"):
+			if toilet.has_turd:
+				var distance := global_position.distance_to(toilet.global_position)
+				if distance < nearest_distance:
+					nearest_distance = distance
+					next_toilet = toilet
+	if previous_toilet != null and previous_toilet != next_toilet:
+		previous_toilet.set_targeted(false)
+	nearby_toilet = next_toilet
+	if nearby_toilet != null:
+		nearby_toilet.set_targeted(true)
 	if game != null:
 		game.set_interaction_prompt(nearby_toilet != null)
 

@@ -26,10 +26,18 @@ var trigger_fired := {}
 var trigger_fire_count := {}
 
 var counter_label: Label
+var plus_one_label: Label
 var prompt_label: Label
 var status_label: Label
 var completion_panel: ColorRect
 var completion_text: Label
+var collection_feedback_count := 0
+var counter_punch_count := 0
+var exit_unlock_feedback_count := 0
+
+var _plus_one_tween: Tween
+var _counter_punch_tween: Tween
+var _exit_unlock_tween: Tween
 
 
 func _ready() -> void:
@@ -94,13 +102,18 @@ func request_restart() -> void:
 func _on_toilet_collected(_toilet: TurdToilet) -> void:
 	collected_turds += 1
 	_evaluate_triggers()
+	var exit_just_unlocked := false
 	if collected_turds == required_turds:
 		state = HeistState.EXIT_AVAILABLE
 		heist_exit.set_locked(false)
+		exit_just_unlocked = true
 		print("TB_EXIT_UNLOCKED")
 		if level_id == "restroom_001":
 			print("TB001_EXIT_UNLOCKED")
 	_update_hud()
+	_begin_collection_feedback()
+	if exit_just_unlocked:
+		_begin_exit_unlock_feedback()
 
 
 func _evaluate_triggers() -> void:
@@ -211,12 +224,26 @@ func _build_hud() -> void:
 
 	counter_label = Label.new()
 	counter_label.position = Vector2(18.0, 10.0)
+	counter_label.size = Vector2(250.0, 42.0)
+	counter_label.pivot_offset = Vector2(0.0, 21.0)
 	counter_label.add_theme_font_size_override("font_size", 30)
 	counter_label.add_theme_color_override("font_color", Color("fff07a"))
 	top_panel.add_child(counter_label)
 
+	plus_one_label = Label.new()
+	plus_one_label.text = "+1 TURD"
+	plus_one_label.position = Vector2(42.0, 86.0)
+	plus_one_label.size = Vector2(210.0, 44.0)
+	plus_one_label.add_theme_font_size_override("font_size", 27)
+	plus_one_label.add_theme_color_override("font_color", Color("fff07a"))
+	plus_one_label.add_theme_color_override("font_shadow_color", Color("000000"))
+	plus_one_label.add_theme_constant_override("shadow_offset_x", 2)
+	plus_one_label.add_theme_constant_override("shadow_offset_y", 2)
+	plus_one_label.visible = false
+	canvas.add_child(plus_one_label)
+
 	prompt_label = Label.new()
-	prompt_label.text = "E — GRAB TURD"
+	prompt_label.text = "E — STEAL TURD"
 	prompt_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	prompt_label.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
 	prompt_label.position = Vector2(-180.0, -95.0)
@@ -235,6 +262,7 @@ func _build_hud() -> void:
 	status_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
 	status_label.position = Vector2(-190.0, 24.0)
 	status_label.size = Vector2(380.0, 58.0)
+	status_label.pivot_offset = Vector2(190.0, 29.0)
 	status_label.add_theme_font_size_override("font_size", 32)
 	status_label.add_theme_color_override("font_color", Color("57ff74"))
 	canvas.add_child(status_label)
@@ -252,6 +280,55 @@ func _build_hud() -> void:
 	completion_text.add_theme_font_size_override("font_size", 40)
 	completion_text.add_theme_color_override("font_color", Color("fff07a"))
 	completion_panel.add_child(completion_text)
+
+
+func _begin_collection_feedback() -> void:
+	collection_feedback_count += 1
+	counter_punch_count += 1
+	_kill_tween(_plus_one_tween)
+	plus_one_label.visible = true
+	plus_one_label.position = Vector2(42.0, 86.0)
+	plus_one_label.modulate = Color.WHITE
+	_plus_one_tween = create_tween()
+	_plus_one_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	_plus_one_tween.tween_property(plus_one_label, "position:y", 68.0, 0.82)
+	_plus_one_tween.parallel().tween_property(plus_one_label, "modulate:a", 0.0, 0.50).set_delay(0.32)
+	_plus_one_tween.tween_callback(func() -> void:
+		plus_one_label.visible = false
+		_plus_one_tween = null
+	)
+
+	_kill_tween(_counter_punch_tween)
+	counter_label.scale = Vector2(1.13, 1.13)
+	counter_label.modulate = Color("fff2b0")
+	_counter_punch_tween = create_tween()
+	_counter_punch_tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_counter_punch_tween.tween_property(counter_label, "scale", Vector2.ONE, 0.22)
+	_counter_punch_tween.parallel().tween_property(counter_label, "modulate", Color.WHITE, 0.22)
+	_counter_punch_tween.tween_callback(func() -> void: _counter_punch_tween = null)
+
+
+func _begin_exit_unlock_feedback() -> void:
+	exit_unlock_feedback_count += 1
+	_kill_tween(_exit_unlock_tween)
+	status_label.scale = Vector2(1.14, 1.14)
+	status_label.modulate = Color("caff9e")
+	_exit_unlock_tween = create_tween()
+	_exit_unlock_tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_exit_unlock_tween.tween_property(status_label, "scale", Vector2.ONE, 0.28)
+	_exit_unlock_tween.parallel().tween_property(status_label, "modulate", Color.WHITE, 0.28)
+	_exit_unlock_tween.tween_callback(func() -> void: _exit_unlock_tween = null)
+
+
+func _kill_tween(tween: Tween) -> void:
+	if tween != null:
+		tween.kill()
+
+
+func _exit_tree() -> void:
+	_kill_tween(_plus_one_tween)
+	_kill_tween(_counter_punch_tween)
+	_kill_tween(_exit_unlock_tween)
 
 
 func _add_box(node_name: String, size: Vector3, box_position: Vector3, color: Color, with_collision: bool) -> void:
